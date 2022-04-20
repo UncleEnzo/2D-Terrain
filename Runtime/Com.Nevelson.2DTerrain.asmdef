@@ -1,0 +1,16 @@
+{
+    "name": "Com.Nevelson.2DTerrain",
+    "rootNamespace": "",
+    "references": [
+        "GUID:213cb3b80beb19946ad3845399f38eff"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

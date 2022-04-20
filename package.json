@@ -1,0 +1,17 @@
+{
+  "name": "com.nevelson.2d-terrain",
+  "version": "1.0.0",
+  "displayName": "2D Terrain",
+  "description": "A lightweight package full of 2D Terrain Mechanics.",
+  "unity": "2020.3",
+  "dependencies": {
+    "com.unity.test-framework": "1.1.31",
+    "com.nevelson.2d-essential-utilities": "1.0.0"
+  },
+  "keywords": [ "movement", "terrain", "2D" ],
+  "author": {
+    "name": "Nicholas Evelson",
+    "email": "runefindergamedev@gmail.com",
+    "url": "https://store.steampowered.com/app/1481840/Frisbros/"
+  }
+}
