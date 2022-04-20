@@ -22,7 +22,7 @@ namespace Nevelson.Terrain
 
         protected void TraverseTile(Vector2 worldPosition, Rigidbody2D rb, Vector2 moveVelocity)
         {
-            if (!TryGetTopMapNoWall(worldPosition, TerrainMonoSingleton.LevelTiles, out Tilemap surfaceMap))
+            if (!TryGetTopMapNoWall(worldPosition, LevelTerrain.Tilemaps, out Tilemap surfaceMap))
             {
                 previousMovementType = defaultTileProperties.ApplyTileProperties(rb, moveVelocity, previousMovementType);
                 return;

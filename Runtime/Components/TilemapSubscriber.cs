@@ -13,7 +13,7 @@ namespace Nevelson.Terrain
             tilemaps = transform.GetComponentsInChildren<Tilemap>().ToList();
             foreach (var tilemap in tilemaps)
             {
-                TerrainMonoSingleton.LevelTiles.Add(tilemap);
+                LevelTerrain.Tilemaps.Add(tilemap);
             }
         }
 
@@ -21,7 +21,7 @@ namespace Nevelson.Terrain
         {
             foreach (var tilemap in tilemaps)
             {
-                TerrainMonoSingleton.LevelTiles.Remove(tilemap);
+                LevelTerrain.Tilemaps.Remove(tilemap);
             }
         }
     }
