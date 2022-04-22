@@ -11,32 +11,37 @@ namespace Nevelson.Terrain
     [CreateAssetMenu(fileName = "TileDataSO", menuName = "TerrainTile/TileDataSO")]
     public class TileData : ScriptableObject
     {
-        public TileBase[] tileset = new TileBase[0];
+        [SerializeField] private TileBase[] tileset = new TileBase[0];
+        public TileBase[] TileSet { get => tileset; }
+
+        [Header("Pitfall Tile")]
+        [SerializeField] private bool isPitfall = false;
+
+        [Header("Switch between transform and rb")]
+        [SerializeField] private MovementType currentMovementType = MovementType.TRANSFORM;
 
         [Header("Percentage to increase or decrease object speed on tile")]
-        [Range(-2f, 2f)] public float speedModifier = 1f;
+        [Range(-2f, 2f)] [SerializeField] private float speedModifier = 1f;
 
         [Header("Directions to apply speed modifier")]
-        public Direction[] applySpeedModInDir = new Direction[4] {
+        [SerializeField]
+        private Direction[] applySpeedModInDir = new Direction[4] {
             Direction.LEFT,
             Direction.RIGHT,
             Direction.UP,
             Direction.DOWN
         };
 
-        [Header("Switch between transform and rb")]
-        public MovementType currentMovementType = MovementType.TRANSFORM;
-
         [Header("Percentage speed reduction on switching to physics-based movement")]
-        [Range(0, 1)] public float onChangeToPhysicsSpeedReduction = .35f;
+        [Range(0, 1)] [SerializeField] private float onChangeToPhysicsSpeedReduction = .35f;
 
         [Header("Rigidbody velocity magnitude must be below this threshold to regain transform movement control after knockback")]
-        [Range(0, 1)] public float knockbackRegainTransformControlThreshold = .35f;
+        [Range(0, 1)] [SerializeField] private float knockbackRegainTransformControlThreshold = .35f;
 
         [Header("Order of dirs in array matters for diagonals")]
-        public Direction[] conveyorBeltDir = new Direction[0];
-        [Range(-300, 300)] public int conveyorSpeed = 100;
-        [Range(0, .45f)] float tileYOffset = .4f;
+        [SerializeField] private Direction[] conveyorBeltDir = new Direction[0];
+        [Range(-300, 300)] [SerializeField] private int conveyorSpeed = 100;
+        [Range(0, .45f)] private float tileYOffset = .4f;
 
         void OnValidate()
         {
@@ -59,8 +64,27 @@ namespace Nevelson.Terrain
         }
 
 
-        public MovementType ApplyTileProperties(Rigidbody2D rigidbody, Vector2 moveVelocity, MovementType currentMovementType, Vector2 tilePos)
+        public MovementType ApplyTileProperties(Rigidbody2D rigidbody, Vector2 moveVelocity, MovementType currentMovementType, Vector2 tilePos, IPitfall iPitfall)
         {
+            if (isPitfall)
+            {
+                if (iPitfall != null)
+                {
+                    //checks the previous is a moving platform, immediately triggers the drop
+                    //NEEDS TO BE ONLY THE CONVEYOR BELT AND ICE TILES
+
+                    bool triggerImmediateForConveyor = previousTileData.previousTile.isMovingPlatform && previousTileData.previousTile.conveyorBeltDir.Length > 0;
+                    bool triggerImmediateForPhysics = previousTileData.previousTile.isMovingPlatform && !previousTileData.previousTile.isTransformMove;
+
+                    iPitfall.OnFixedUpdate_TriggerPitfall(triggerImmediateForConveyor || triggerImmediateForPhysics);
+                }
+                else Debug.LogError("Attempting to trigger pitfall that doesn't exist, check GetIPitfall method");
+            }
+
+
+
+
+
             Vector2 moveVelocitySpeedAdjusted = ModifySpeedInDir(moveVelocity);
             moveVelocitySpeedAdjusted = ModifyConveyorBeltInDir(moveVelocitySpeedAdjusted, tilePos, rigidbody);
             HandleMovement(rigidbody, moveVelocitySpeedAdjusted, currentMovementType);

@@ -1,3 +1,4 @@
+using Nevelson.Utils;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using UnityEngine;
@@ -8,48 +9,45 @@ using static Nevelson.Terrain.Enums;
 namespace Nevelson.Terrain
 {
     [RequireComponent(typeof(Rigidbody2D))]
+    [RequireComponent(typeof(PitfallObject))]
     public abstract class MovementBase : MonoBehaviour
     {
         protected Rigidbody2D rigidBody;
         private MovementType previousMovementType = MovementType.TRANSFORM;
         private TileData defaultTileProperties;
+        private IPitfall iPitfall;
 
         private void Awake()
         {
             rigidBody = GetComponent<Rigidbody2D>();
+            iPitfall = GetComponent<IPitfall>();
             defaultTileProperties = Resources.Load(Constants.TILE_TYPES_PATH + Constants.DEFAULT_TILE) as TileData;
         }
 
-        protected void TraverseTile(Vector2 worldPosition, Rigidbody2D rb, Vector2 moveVelocity)
+        protected void TraverseTile(Vector2 moveVelocity)
         {
-            if (!TryGetTopMapNoWall(worldPosition, LevelTerrain.Tilemaps, out Tilemap surfaceMap))
+            if (!TryGetTopMapNoWall(transform.Position2D(), LevelTerrain.Tilemaps, out Tilemap surfaceMap))
             {
-                previousMovementType = defaultTileProperties.ApplyTileProperties(rb, moveVelocity, previousMovementType, Vector2.zero);
+                previousMovementType = defaultTileProperties.ApplyTileProperties(rigidBody, moveVelocity, previousMovementType, Vector2.zero, iPitfall);
                 return;
             }
 
-            PerformTileMovement(worldPosition, rb, moveVelocity, surfaceMap);
-            return;
-        }
-
-        private void PerformTileMovement(Vector2 worldPosition, Rigidbody2D rb, Vector2 moveVelocity, Tilemap surfaceMap)
-        {
             if (surfaceMap == null)
             {
-                previousMovementType = defaultTileProperties.ApplyTileProperties(rb, moveVelocity, previousMovementType, Vector2.zero);
+                previousMovementType = defaultTileProperties.ApplyTileProperties(rigidBody, moveVelocity, previousMovementType, Vector2.zero, iPitfall);
                 return;
             }
 
-            Vector3Int gridPosition = surfaceMap.WorldToCell(worldPosition);
+            Vector3Int gridPosition = surfaceMap.WorldToCell(transform.Position2D());
             Vector2 cellCenter = surfaceMap.GetCellCenterWorld(gridPosition);
             TileBase tile = surfaceMap.GetTile(gridPosition);
             if (!TryGetTileData(tile, out TileData tileProperties))
             {
-                previousMovementType = defaultTileProperties.ApplyTileProperties(rb, moveVelocity, previousMovementType, cellCenter);
+                previousMovementType = defaultTileProperties.ApplyTileProperties(rigidBody, moveVelocity, previousMovementType, cellCenter, iPitfall);
                 return;
             }
 
-            previousMovementType = tileProperties.ApplyTileProperties(rb, moveVelocity, previousMovementType, cellCenter);
+            previousMovementType = tileProperties.ApplyTileProperties(rigidBody, moveVelocity, previousMovementType, cellCenter, iPitfall);
         }
 
         private bool TryGetTopMapNoWall(Vector2 worldPosition, List<Tilemap> tileMaps, out Tilemap surfaceMap)
