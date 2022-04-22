@@ -24,7 +24,7 @@ namespace Nevelson.Terrain
         {
             if (!TryGetTopMapNoWall(worldPosition, LevelTerrain.Tilemaps, out Tilemap surfaceMap))
             {
-                previousMovementType = defaultTileProperties.ApplyTileProperties(rb, moveVelocity, previousMovementType);
+                previousMovementType = defaultTileProperties.ApplyTileProperties(rb, moveVelocity, previousMovementType, Vector2.zero);
                 return;
             }
 
@@ -36,19 +36,20 @@ namespace Nevelson.Terrain
         {
             if (surfaceMap == null)
             {
-                previousMovementType = defaultTileProperties.ApplyTileProperties(rb, moveVelocity, previousMovementType);
+                previousMovementType = defaultTileProperties.ApplyTileProperties(rb, moveVelocity, previousMovementType, Vector2.zero);
                 return;
             }
 
             Vector3Int gridPosition = surfaceMap.WorldToCell(worldPosition);
+            Vector2 cellCenter = surfaceMap.GetCellCenterWorld(gridPosition);
             TileBase tile = surfaceMap.GetTile(gridPosition);
             if (!TryGetTileData(tile, out TileData tileProperties))
             {
-                previousMovementType = defaultTileProperties.ApplyTileProperties(rb, moveVelocity, previousMovementType);
+                previousMovementType = defaultTileProperties.ApplyTileProperties(rb, moveVelocity, previousMovementType, cellCenter);
                 return;
             }
 
-            previousMovementType = tileProperties.ApplyTileProperties(rb, moveVelocity, previousMovementType);
+            previousMovementType = tileProperties.ApplyTileProperties(rb, moveVelocity, previousMovementType, cellCenter);
         }
 
         private bool TryGetTopMapNoWall(Vector2 worldPosition, List<Tilemap> tileMaps, out Tilemap surfaceMap)

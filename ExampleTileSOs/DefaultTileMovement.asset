@@ -18,3 +18,5 @@ MonoBehaviour:
   currentMovementType: 0
   onChangeToPhysicsSpeedReduction: 0.35
   knockbackRegainTransformControlThreshold: 0.35
+  conveyorBeltDir: 
+  conveyorSpeed: 100
