@@ -6,9 +6,6 @@ namespace Nevelson.Terrain
     [RequireComponent(typeof(Rigidbody2D))]
     public class Player : MonoBehaviour
     {
-        //public float speed = 6f;
-        //public Vector2 MoveVelocity { get; set; }
-        //private Rigidbody2D rb;
         private Animator anim;
         private SpriteRenderer spriteRenderer;
         private bool isSpriteFlipped = false;
@@ -16,7 +13,6 @@ namespace Nevelson.Terrain
 
         private void Start()
         {
-            //rb = GetComponent<Rigidbody2D>();
             spriteRenderer = GetComponentInChildren<SpriteRenderer>();
             anim = GetComponentInChildren<Animator>();
         }
@@ -30,20 +26,9 @@ namespace Nevelson.Terrain
             }
 
             Vector2 inputRaw = new Vector2(Input.GetAxisRaw("Horizontal"), Input.GetAxisRaw("Vertical"));
-            //SetMovementVelocity(inputRaw);
             SetSpriteRendererDirection(inputRaw.x);
             SetAnimationState(inputRaw);
         }
-
-        private void FixedUpdate()
-        {
-            //rb.MovePosition(new Vector2(transform.position.x, transform.position.y) + MoveVelocity * Time.fixedDeltaTime);
-        }
-
-        //private void SetMovementVelocity(Vector2 moveInput)
-        //{
-        //    MoveVelocity = moveInput * speed;
-        //}
 
         private void SetSpriteRendererDirection(float inputRawX)
         {

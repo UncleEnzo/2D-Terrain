@@ -1,0 +1,23 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 79402a470b6815e4ca4a47a703ffe05d, type: 3}
+  m_Name: ConveyorUp
+  m_EditorClassIdentifier: 
+  tileset:
+  - {fileID: 11400000, guid: 99ca2cf94593c3e4faf26b3d8f0cee20, type: 2}
+  speedModifier: 1
+  applySpeedModInDir: 
+  currentMovementType: 0
+  onChangeToPhysicsSpeedReduction: 0.35
+  knockbackRegainTransformControlThreshold: 0.35
+  conveyorBeltDir: 02000000
+  conveyorSpeed: 100

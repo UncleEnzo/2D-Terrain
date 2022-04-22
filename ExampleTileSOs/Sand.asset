@@ -12,9 +12,20 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 79402a470b6815e4ca4a47a703ffe05d, type: 3}
   m_Name: Sand
   m_EditorClassIdentifier: 
-  tileset: []
+  tileset:
+  - {fileID: 11400000, guid: 9c7d664eafe50554491abd6f782e75d9, type: 2}
+  - {fileID: 11400000, guid: c77acc1f43296a148978f2fca35c895f, type: 2}
+  - {fileID: 11400000, guid: 0340212e4135e9a49be3d42cc93e5501, type: 2}
+  - {fileID: 11400000, guid: 3d5b3feccd75cea4884b9d0e2ed1ab7c, type: 2}
+  - {fileID: 11400000, guid: f05fda4f5bacc0c48a52544e8ed6b695, type: 2}
+  - {fileID: 11400000, guid: 5d10d805f2debd840b99ae383883b94d, type: 2}
+  - {fileID: 11400000, guid: c1f36c11cd6ea24419f6908c91bab34c, type: 2}
+  - {fileID: 11400000, guid: 25242d6c96c4cd54e85ac8cace4e1a8f, type: 2}
+  - {fileID: 11400000, guid: 303d98094a910df418a783a8e5b7c98b, type: 2}
   speedModifier: 0.5
   applySpeedModInDir: 00000000010000000200000003000000
   currentMovementType: 0
   onChangeToPhysicsSpeedReduction: 0.35
   knockbackRegainTransformControlThreshold: 0.35
+  conveyorBeltDir: 
+  conveyorSpeed: 100

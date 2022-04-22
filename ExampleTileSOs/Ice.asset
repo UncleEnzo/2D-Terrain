@@ -12,9 +12,20 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 79402a470b6815e4ca4a47a703ffe05d, type: 3}
   m_Name: Ice
   m_EditorClassIdentifier: 
-  tileset: []
+  tileset:
+  - {fileID: 11400000, guid: 30229076924836a45a2151b465e5cb7e, type: 2}
+  - {fileID: 11400000, guid: d2914ee7f92dd284ea41c6e990b3aea2, type: 2}
+  - {fileID: 11400000, guid: e3f6ade4ba1edcf40a78235378f91990, type: 2}
+  - {fileID: 11400000, guid: 9f713243ae0541f43ad0f0622c485f16, type: 2}
+  - {fileID: 11400000, guid: 7b96f761c9514714fa4a55d01cf8d0be, type: 2}
+  - {fileID: 11400000, guid: e131f5eeb9ddcb24dadeada2c108263e, type: 2}
+  - {fileID: 11400000, guid: 982846786fe63804094bec5744038ccf, type: 2}
+  - {fileID: 11400000, guid: 97a54b7a6d201af46b7f751482372f98, type: 2}
+  - {fileID: 11400000, guid: a92d1f9f3692d0c4d8171dd799fa42f2, type: 2}
   speedModifier: 1
   applySpeedModInDir: 00000000010000000200000003000000
   currentMovementType: 1
   onChangeToPhysicsSpeedReduction: 0.35
   knockbackRegainTransformControlThreshold: 0.35
+  conveyorBeltDir: 
+  conveyorSpeed: 100

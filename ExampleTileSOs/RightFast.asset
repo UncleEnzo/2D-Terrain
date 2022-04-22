@@ -12,9 +12,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 79402a470b6815e4ca4a47a703ffe05d, type: 3}
   m_Name: RightFast
   m_EditorClassIdentifier: 
-  tileset: []
+  tileset:
+  - {fileID: 11400000, guid: 0b9a76058b63eb14eaf6b6521d867f4e, type: 2}
+  - {fileID: 11400000, guid: af512ef8944d5ed47ae9a573b88ced69, type: 2}
+  - {fileID: 11400000, guid: 38aa5a73d4f05f141b5b8091e11a76ad, type: 2}
   speedModifier: 2
   applySpeedModInDir: 01000000
   currentMovementType: 0
   onChangeToPhysicsSpeedReduction: 0.35
   knockbackRegainTransformControlThreshold: 0.35
+  conveyorBeltDir: 
+  conveyorSpeed: 100
