@@ -4,15 +4,19 @@ namespace Nevelson.Terrain
 {
     public class RespawnData : MonoBehaviour
     {
-        public GameObject[] respawnLocations;
+        [SerializeField] private string respawnTrigger = "";
+        [SerializeField] private GameObject[] respawnLocations = new GameObject[0];
 
-        void Start()
+        private void Start()
         {
-            if (respawnLocations.Length <= 0) Debug.LogError("Respawn Trigger missing respawnLocation data");
+            if (respawnLocations.Length <= 0)
+            {
+                Debug.LogError("Respawn Trigger Does Not Contain Respawn Locations");
+            }
         }
 
 
-        public void OnTriggerStay2D(Collider2D collision)
+        private void OnTriggerStay2D(Collider2D collision)
         {
             OnTriggerStay_Player(collision);
         }
@@ -20,10 +24,11 @@ namespace Nevelson.Terrain
         //If player enters trigger sends him the respawn points for the location
         private void OnTriggerStay_Player(Collider2D collision)
         {
-            if (collision.CompareTag(ConstantValues.OBJECT_COLLIDER))
+            if (collision.CompareTag(Constants.OBJECT_COLLIDER))
             {
-                if (collision.transform.parent.CompareTag(ConstantValues.PLAYER))
+                if (collision.transform.parent.CompareTag(respawnTrigger))
                 {
+                    //Need to think of a better way to send respawn data
                     collision.transform.parent.GetComponent<PlayerController>().SetRespawnPoints(respawnLocations);
                 }
 

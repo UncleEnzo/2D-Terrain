@@ -18,7 +18,7 @@ namespace Nevelson.Terrain
         [SerializeField] private bool isPitfall = false;
 
         [Header("Switch between transform and rb")]
-        [SerializeField] private MovementType currentMovementType = MovementType.TRANSFORM;
+        [SerializeField] private MovementType moveType = MovementType.TRANSFORM;
 
         [Header("Percentage to increase or decrease object speed on tile")]
         [Range(-2f, 2f)] [SerializeField] private float speedModifier = 1f;
@@ -64,7 +64,7 @@ namespace Nevelson.Terrain
         }
 
 
-        public MovementType ApplyTileProperties(Rigidbody2D rigidbody, Vector2 moveVelocity, MovementType currentMovementType, Vector2 tilePos, IPitfall iPitfall)
+        public TileData ApplyTileProperties(Rigidbody2D rigidbody, Vector2 moveVelocity, TileData previousTileData, Vector2 tilePos, IPitfall iPitfall)
         {
             if (isPitfall)
             {
@@ -73,22 +73,21 @@ namespace Nevelson.Terrain
                     //checks the previous is a moving platform, immediately triggers the drop
                     //NEEDS TO BE ONLY THE CONVEYOR BELT AND ICE TILES
 
-                    bool triggerImmediateForConveyor = previousTileData.previousTile.isMovingPlatform && previousTileData.previousTile.conveyorBeltDir.Length > 0;
-                    bool triggerImmediateForPhysics = previousTileData.previousTile.isMovingPlatform && !previousTileData.previousTile.isTransformMove;
+                    bool triggerImmediateForConveyor = previousTileData.isMovingPlatform && previousTileData.conveyorBeltDir.Length > 0;
+                    bool triggerImmediateForPhysics = previousTileData.isMovingPlatform && previousTileData.moveType != MovementType.TRANSFORM;
 
                     iPitfall.OnFixedUpdate_TriggerPitfall(triggerImmediateForConveyor || triggerImmediateForPhysics);
                 }
-                else Debug.LogError("Attempting to trigger pitfall that doesn't exist, check GetIPitfall method");
+                else
+                {
+                    Debug.LogError("Attempting to trigger pitfall that doesn't exist, check GetIPitfall method");
+                }
             }
-
-
-
-
 
             Vector2 moveVelocitySpeedAdjusted = ModifySpeedInDir(moveVelocity);
             moveVelocitySpeedAdjusted = ModifyConveyorBeltInDir(moveVelocitySpeedAdjusted, tilePos, rigidbody);
-            HandleMovement(rigidbody, moveVelocitySpeedAdjusted, currentMovementType);
-            return this.currentMovementType;
+            HandleMovement(rigidbody, moveVelocitySpeedAdjusted, moveType);
+            return this;
         }
 
         private void HandleMovement(Rigidbody2D rigidbody, Vector2 moveVelocity, MovementType previousMovementType)
@@ -99,7 +98,7 @@ namespace Nevelson.Terrain
 
         private void ApplyMovementToRigidBody(Rigidbody2D rigidbody, Vector2 moveVelocity)
         {
-            if (currentMovementType == MovementType.TRANSFORM)
+            if (moveType == MovementType.TRANSFORM)
             {
                 //EXPLAIN THIS
                 if (rigidbody.velocity.magnitude < knockbackRegainTransformControlThreshold)
@@ -117,13 +116,13 @@ namespace Nevelson.Terrain
         {
             //Switching Physics to Transform: Reset velocity to prevent
             // object from shooting off at high speeds on first frame
-            if (currentMovementType == MovementType.TRANSFORM && lastMovementType != currentMovementType)
+            if (moveType == MovementType.TRANSFORM && lastMovementType != moveType)
             {
                 rigidbody.velocity = Vector2.zero;
             }
             //Switching Transform to Physics:  Lower Move Velocity to
             //prevent high momentum build up from physics on first frame
-            else if (currentMovementType != lastMovementType)
+            else if (moveType != lastMovementType)
             {
                 rigidbody.velocity = moveVelocity * onChangeToPhysicsSpeedReduction;
             }

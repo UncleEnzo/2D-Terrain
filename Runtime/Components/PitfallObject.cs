@@ -2,17 +2,20 @@ using Nevelson.Utils;
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using UnityEngine;
 using UnityEngine.Tilemaps;
+using static Nevelson.Terrain.Enums;
 
 namespace Nevelson.Terrain
 {
-    public class PitfallObject : MonoBehaviour, IPitfall
+    public class PitfallObject : TerrainBase, IPitfall
     {
         //TODO EXTERNAL POSITION SETTING IS UGLY
         //Used In Disc.cs in frisbros Before a throw to set specific pitfall pos and respawn locations list
         //make these Getters and setters maybe? 
+
+        //FIGURE OUT WHICH VALUES TO HIDE WITH ODIN IF UNUSED
+        [SerializeField] private RespawnMode respawnMode = RespawnMode.MANUAL;
         public Vector2 pitfallPosition = Vector2.zero;
         [Tooltip("The transform locations where objects respawn. This value can be changed at runtime.")]
         public Transform[] customRespawnLocations;
@@ -24,6 +27,9 @@ namespace Nevelson.Terrain
         [Tooltip("Controls how quickly the falling animations player")]
         [SerializeField] private float pitfallAnimSpeed = .015f;
         [SerializeField] private bool isDestroyedOnPitfall = true;
+        [Tooltip("Example unsafe layers > Wall, Object")]
+        [SerializeField] private LayerMask unsafeRespawnLayers;
+
 
         private bool delayCompleted = false;
         private bool isFalling = false;
@@ -66,7 +72,6 @@ namespace Nevelson.Terrain
             DetermineRespawnLocation();
         }
 
-        //Trigger immediate is useful for situations like when player is on a platform and falls in the direction the platform is moving. Prevents edgecase of platform catching up to him before trigger occurs
         public void OnFixedUpdate_TriggerPitfall(bool triggerImmediate = false)
         {
             foreach (var pitfallCheck in pitfallChecks)
@@ -107,19 +112,18 @@ namespace Nevelson.Terrain
 
             BeforePitfall();
 
-            //dynamically chooses the respawn point if none is supplied
-            if (customRespawnLocations.Length == 0)
+            switch (respawnMode)
             {
-                //ToDo: Not implemented yet. I don't like how we CHOOSE the dynamic location.  need to make it a
-                //position the player was at X seconds agos
-                StartCoroutine(FallingCo());
-            }
-            //if there is a custom or multiple respawn points, runs checks to make sure the points are
-            //not in a wall etc, then chooses the best one
-            else
-            {
-                //pitfall ripple effect is what calls the audio
-                StartCoroutine(FallingCo(customRespawnLocations, LevelTerrain.Tilemaps));
+                case RespawnMode.AUTOMATIC:
+                    //ToDo: Not implemented yet. I don't like how we CHOOSE the dynamic location.  need to make it a position the player was at X seconds agos
+                    StartCoroutine(AutomaticFallingCo());
+                    break;
+                case RespawnMode.MANUAL:
+                    StartCoroutine(ManualFallingCo(customRespawnLocations, LevelTerrain.Tilemaps));
+                    break;
+                default:
+                    Debug.LogError("Specified Respawn Mode Doesn't Exist.");
+                    break;
             }
             isFirstPitContact = true;
         }
@@ -167,7 +171,11 @@ namespace Nevelson.Terrain
         //ToDO: NOT IMPLEMENTED YET, NEED TO FIGURE OUT A CLEANER DYNAMIC REPOSITION
         //LOOK TO BRACKEY'S VIDEO ON REWIND FEATURE AND MAYBE USE THAT POSITION TRACKING TO DETERMINE
         //THEN ADD X SECONDS AGO SO IT'S NOT RIGHT NEXT TO THE PIT
-        private IEnumerator FallingCo()
+        //Edge cases to note:
+        //  Tilemap moves or updates, what is the failsafe?
+        //  Last location was equally dangerous
+        //  Pitfalls immediately after other pitfall
+        private IEnumerator AutomaticFallingCo()
         {
             Vector2 scaleReduction = new Vector2(pitfallAnimSpeed, pitfallAnimSpeed);
             while (gameObject.transform.LocalScale2D().x > 0)
@@ -193,15 +201,11 @@ namespace Nevelson.Terrain
             }
         }
 
-        /// <summary>
-        /// This falling coroutine takes in an arry of custom respawn points and selects the safe one
-        /// AFTER the falling animation has taken place.  This is done in case the respawn location moves
-        /// over the course of the fall to ensure it doesn't respawn inside a wall.
-        /// </summary>
-        /// <param name="respawnLocationTransform"></param>
-        /// <param name="tilemaps"></param>
-        /// <returns></returns>
-        private IEnumerator FallingCo(Transform[] respawnLocationTransform, List<Tilemap> tilemaps)
+        //TODO:
+        //   -Clean this
+        //   -Need a better way to set Custom Respawn Points array to this component
+        //   -Need better way to set pitfallPosition
+        private IEnumerator ManualFallingCo(Transform[] respawnLocationTransform, List<Tilemap> tilemaps)
         {
             Vector2 scaleReduction = new Vector2(pitfallAnimSpeed, pitfallAnimSpeed);
             while (transform.LocalScale2D().x > 0)
@@ -213,39 +217,35 @@ namespace Nevelson.Terrain
 
             DuringPitfall();
 
-            //TODO: NEED TO CLEAN ALL OF THIS SHIT UP, VERY UGLY ATM
             if (!isDestroyedOnPitfall)
             {
                 yield return new WaitForSecondsRealtime(.6f);
+
+                //while loop catches edgecase of moving respawn points that slide under walls etc
                 List<Transform> respawnFriendlyPoints = new List<Transform>();
                 while (respawnFriendlyPoints.Count == 0)
                 {
-                    //check the pitfall locations for a safe area to respawn
-                    //This is where it performs the pitfall calculation
-                    //Removing all tilemaps from pitfall that are inside
-                    //walls and other undesirable locations
                     foreach (var respawnPos in respawnLocationTransform)
                     {
                         if (IsRespawnFriendlyMap(respawnPos.transform.Position2D(), tilemaps))
                         {
-                            //Double check that there's enough space for the obj to respawn
+                            //Double check there is enough space for the obj to respawn
                             Collider2D[] colliders = Physics2D.OverlapCircleAll(respawnPos.transform.Position2D(), .5f);
-
                             bool addPoint = true;
                             foreach (var collider in colliders)
                             {
-                                if (LayerMask.LayerToName(collider.gameObject.layer) == Constants.WALL ||
-                                    LayerMask.LayerToName(collider.gameObject.layer) == Constants.OBJECT)
+                                if (unsafeRespawnLayers.IsInLayerMask(LayerMask.LayerToName(collider.gameObject.layer)))
                                 {
-
                                     if (collider?.attachedRigidbody?.GetComponent<RespawnData>() == null)
                                     {
                                         addPoint = false;
                                     }
                                 }
                             }
-
-                            if (addPoint) respawnFriendlyPoints.Add(respawnPos);
+                            if (addPoint)
+                            {
+                                respawnFriendlyPoints.Add(respawnPos);
+                            }
                         }
                         else
                         {
@@ -259,16 +259,14 @@ namespace Nevelson.Terrain
                     }
                 }
 
-
-
                 Transform respawnLocation;
                 if (pitfallPosition != Vector2.zero)
                 {
-                    respawnLocation = GetRespawnPoint(respawnFriendlyPoints, pitfallPosition);
+                    respawnLocation = pitfallPosition.GetClosest(respawnFriendlyPoints);
                 }
                 else
                 {
-                    respawnLocation = GetRespawnPoint(respawnFriendlyPoints, transform.Position2D());
+                    respawnLocation = transform.Position2D().GetClosest(respawnFriendlyPoints);
                 }
 
                 transform.Position2D(respawnLocation.Position2D());
@@ -285,18 +283,15 @@ namespace Nevelson.Terrain
             }
         }
 
-        //FROM HERE DOWN I NEED TO CLEAN EVERYTHING UP A LOT!!!!!!!!!!!!!!!!!!!!
-
-        //TODO I DON'T LIKE THIS METHOD, CLEAN UP
         private bool IsRespawnFriendlyMap(Vector2 worldPosition, List<Tilemap> tileMaps)
         {
-            List<Tilemap> mapsAtWorldPosition = GetAllMapsWithTileAtPos(worldPosition, tileMaps);
+            List<Tilemap> mapsAtWorldPosition = GetMapsAtPos(worldPosition, tileMaps);
             if (mapsAtWorldPosition.Count == 0)
             {
                 return false;
             }
 
-            if (!TryGetLargestSortLayerAtPos(mapsAtWorldPosition, Dictionaries.SortingLayers, out int largestLayer))
+            if (!TryGetSortLayerAtPos(mapsAtWorldPosition, Dictionaries.SortingLayers, out int largestLayer))
             {
                 return true;
             }
@@ -304,89 +299,13 @@ namespace Nevelson.Terrain
             //Checks if the map is respawn friendly
             foreach (var value in Dictionaries.RespawnFriendlySortingLayers.Values)
             {
-                if (value == largestLayer) return true;
+                if (value == largestLayer)
+                {
+                    return true;
+                }
             }
 
             return false;
-        }
-
-        //TODO: I DON'T LIKE THIS ONE EITHER > In FRISBROS IT'S USED IN DISC AS WELL SO WEIRD TO MAKE IT PRIVATE HERE
-        private Transform GetRespawnPoint(List<Transform> pitfallRespawnPoints, Vector2 pitfallTargetPos)
-        {
-            if (pitfallRespawnPoints.Count <= 0)
-            {
-                Debug.LogError("No respawn points supplied");
-                return null;
-            }
-
-            Transform closestRespawn = pitfallRespawnPoints[0];
-            foreach (var respawn in pitfallRespawnPoints)
-            {
-                if (Vector2.Distance(respawn.Position2D(), pitfallTargetPos) <
-                    Vector2.Distance(closestRespawn.Position2D(), pitfallTargetPos))
-                {
-                    closestRespawn = respawn;
-                }
-            }
-            return closestRespawn;
-        }
-
-        //TODO DON'T LIKE THAT It'S PRIVATE HERE
-        private List<Tilemap> GetAllMapsWithTileAtPos(Vector2 worldPosition, List<Tilemap> tileMaps)
-        {
-            List<Tilemap> mapsAtWorldPosition = new List<Tilemap>();
-            foreach (var map in tileMaps)
-            {
-                //gets the tilebase of every single map 
-                Vector3Int gridPos = map.WorldToCell(worldPosition);
-                TileBase objOnTile = map.GetTile(gridPos);
-                if (objOnTile == null) continue;
-                mapsAtWorldPosition.Add(map);
-            }
-            return mapsAtWorldPosition;
-        }
-
-        //TODO: DON'T LIKE THIS ONE EITHER
-        private static bool TryGetLargestSortLayerAtPos(List<Tilemap> mapsAtWorldPosition, ReadOnlyDictionary<string, int> sortingLayers, out int sortingMapLayer)
-        {
-            //Removes tilemaps that are not on the sorting layers dict
-            for (int i = 0; i < mapsAtWorldPosition.Count; i++)
-            {
-                string sortingName = mapsAtWorldPosition[i].GetComponent<TilemapRenderer>().sortingLayerName;
-                if (!sortingLayers.ContainsKey(sortingName))
-                {
-                    //Debug.Log("Removing map: " + mapsAtWorldPosition[i].name + " because it's not in sortingLayers.");
-                    mapsAtWorldPosition.Remove(mapsAtWorldPosition[i]);
-                }
-            }
-
-            if (mapsAtWorldPosition.Count == 0)
-            {
-                sortingMapLayer = -1;
-                return false;
-            }
-
-            //Initialize largest value collectors
-            int surfaceMapLayer = sortingLayers[mapsAtWorldPosition[0].GetComponent<TilemapRenderer>().sortingLayerName];
-            foreach (var map in mapsAtWorldPosition)
-            {
-                string sortingLayerName = map.GetComponent<TilemapRenderer>().sortingLayerName;
-                //gets the greatest sorting layer of maps you are standing on
-                int newMapSortingLayer;
-                if (!sortingLayers.TryGetValue(sortingLayerName, out newMapSortingLayer))
-                {
-                    Debug.LogError(sortingLayerName);
-                    sortingMapLayer = -1;
-                    return false;
-                }
-
-                if (newMapSortingLayer > surfaceMapLayer)
-                {
-                    surfaceMapLayer = newMapSortingLayer;
-                }
-            }
-            sortingMapLayer = surfaceMapLayer;
-            return true;
         }
     }
 }
