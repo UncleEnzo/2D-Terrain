@@ -30,15 +30,6 @@ namespace Nevelson.Terrain
             throw new System.NotImplementedException();
         }
 
-        private void Update()
-        {
-            //TESTING STUFF
-            //if (Input.GetKeyDown(KeyCode.P))
-            //{
-            //    GetComponent<Rigidbody2D>().AddForce(Vector2.right * 5, ForceMode2D.Impulse);
-            //}
-        }
-
         private void FixedUpdate()
         {
             Vector2 inputRaw = new Vector2(Input.GetAxisRaw("Horizontal"), Input.GetAxisRaw("Vertical"));

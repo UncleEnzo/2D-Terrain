@@ -3,7 +3,7 @@ namespace Nevelson.Terrain
     public class ObjectMovement : MovementBase, IPitfallCondition, IPitfallStates
     {
         //TODO: NOTE ON THESE : THEY CAN BE IMPLEMENTED ANYWHERE ON THE GAME OBJECT,
-        //DOES NOT HAVE TO BE ON THE MOVEMENT SCRIPT (PROBABLY SHOULDN"T
+        //DOES NOT HAVE TO BE ON THE MOVEMENT SCRIPT (PROBABLY SHOULDN"T)
         public bool PF_Check()
         {
             throw new System.NotImplementedException();

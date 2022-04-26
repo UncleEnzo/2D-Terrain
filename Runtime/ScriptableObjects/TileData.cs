@@ -11,19 +11,21 @@ namespace Nevelson.Terrain
     [CreateAssetMenu(fileName = "TileDataSO", menuName = "TerrainTile/TileDataSO")]
     public class TileData : ScriptableObject
     {
-        [SerializeField] private TileBase[] tileset = new TileBase[0];
         public TileBase[] TileSet { get => tileset; }
+        public bool IsMovingPlatform { get => IsMovingPlatform; }
+        public Vector2 movePlatformVelocity { private get; set; } = Vector2.zero;
 
-        [Header("Pitfall Tile")]
+        [SerializeField] private TileBase[] tileset = new TileBase[0];
         [SerializeField] private bool isPitfall = false;
+        [SerializeField] private bool isMovingPlatform = false;
 
-        [Header("Switch between transform and rb")]
+        [Tooltip("Type of movement this tile uses. Transform is snappier. Physics is more fun :)")]
         [SerializeField] private MovementType moveType = MovementType.TRANSFORM;
 
-        [Header("Percentage to increase or decrease object speed on tile")]
+        [Tooltip("Percentage to increase or decrease object speed on tile")]
         [Range(-2f, 2f)] [SerializeField] private float speedModifier = 1f;
 
-        [Header("Directions to apply speed modifier")]
+        [Tooltip("Directions to apply speed modifier")]
         [SerializeField]
         private Direction[] applySpeedModInDir = new Direction[4] {
             Direction.LEFT,
@@ -32,16 +34,16 @@ namespace Nevelson.Terrain
             Direction.DOWN
         };
 
-        [Header("Percentage speed reduction on switching to physics-based movement")]
+        [Tooltip("Percentage speed reduction on switching to physics-based movement")]
         [Range(0, 1)] [SerializeField] private float onChangeToPhysicsSpeedReduction = .35f;
 
-        [Header("Rigidbody velocity magnitude must be below this threshold to regain transform movement control after knockback")]
+        [Tooltip("Rigidbody velocity magnitude must be below this threshold to regain transform movement control after knockback")]
         [Range(0, 1)] [SerializeField] private float knockbackRegainTransformControlThreshold = .35f;
 
-        [Header("Order of dirs in array matters for diagonals")]
+        [Tooltip("Order of dirs in array matters for diagonals")]
         [SerializeField] private Direction[] conveyorBeltDir = new Direction[0];
         [Range(-300, 300)] [SerializeField] private int conveyorSpeed = 100;
-        [Range(0, .45f)] private float tileYOffset = .4f;
+        [Range(0, .45f)] [SerializeField] private float tileYOffset = .4f;
 
         void OnValidate()
         {
@@ -70,10 +72,13 @@ namespace Nevelson.Terrain
             {
                 if (iPitfall != null)
                 {
-                    //checks the previous is a moving platform, immediately triggers the drop
-                    //NEEDS TO BE ONLY THE CONVEYOR BELT AND ICE TILES
+                    //Conditions for immediate drop.
+                    //To prevent edgecase where pitfall delay + moving platform phyics push player 
+                    //back onto platform in continous loop
 
+                    //Moving Platform and previous tile is conveyor
                     bool triggerImmediateForConveyor = previousTileData.isMovingPlatform && previousTileData.conveyorBeltDir.Length > 0;
+                    //Moving Platform and previous tile is ice.
                     bool triggerImmediateForPhysics = previousTileData.isMovingPlatform && previousTileData.moveType != MovementType.TRANSFORM;
 
                     iPitfall.OnFixedUpdate_TriggerPitfall(triggerImmediateForConveyor || triggerImmediateForPhysics);
@@ -96,22 +101,6 @@ namespace Nevelson.Terrain
             ApplyMovementToRigidBody(rigidbody, moveVelocity);
         }
 
-        private void ApplyMovementToRigidBody(Rigidbody2D rigidbody, Vector2 moveVelocity)
-        {
-            if (moveType == MovementType.TRANSFORM)
-            {
-                //EXPLAIN THIS
-                if (rigidbody.velocity.magnitude < knockbackRegainTransformControlThreshold)
-                {
-                    rigidbody.MovePosition(rigidbody.position + moveVelocity * Time.fixedDeltaTime);
-                }
-            }
-            else
-            {
-                rigidbody.AddForce(moveVelocity, ForceMode2D.Force);
-            }
-        }
-
         private void OnChange_HandleMovementTypeTransition(Rigidbody2D rigidbody, Vector2 moveVelocity, MovementType lastMovementType)
         {
             //Switching Physics to Transform: Reset velocity to prevent
@@ -125,6 +114,28 @@ namespace Nevelson.Terrain
             else if (moveType != lastMovementType)
             {
                 rigidbody.velocity = moveVelocity * onChangeToPhysicsSpeedReduction;
+            }
+        }
+
+        private void ApplyMovementToRigidBody(Rigidbody2D rigidbody, Vector2 moveVelocity)
+        {
+            if (isMovingPlatform)
+            {
+                //Handle moving platforms
+                moveVelocity += movePlatformVelocity;
+            }
+
+            if (moveType == MovementType.TRANSFORM)
+            {
+                //EXPLAIN THIS
+                if (rigidbody.velocity.magnitude < knockbackRegainTransformControlThreshold)
+                {
+                    rigidbody.MovePosition(rigidbody.position + moveVelocity * Time.fixedDeltaTime);
+                }
+            }
+            else
+            {
+                rigidbody.AddForce(moveVelocity, ForceMode2D.Force);
             }
         }
 

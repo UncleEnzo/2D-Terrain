@@ -31,6 +31,14 @@ namespace Nevelson.Terrain
         [SerializeField] private LayerMask unsafeRespawnLayers;
 
 
+        //testing
+
+        [SerializeField] private float minRespawnSpace = .5f;
+
+        //testing
+
+
+
         private bool delayCompleted = false;
         private bool isFalling = false;
         private bool isFirstPitContact = true;
@@ -230,16 +238,16 @@ namespace Nevelson.Terrain
                         if (IsRespawnFriendlyMap(respawnPos.transform.Position2D(), tilemaps))
                         {
                             //Double check there is enough space for the obj to respawn
-                            Collider2D[] colliders = Physics2D.OverlapCircleAll(respawnPos.transform.Position2D(), .5f);
+                            Collider2D[] colliders = Physics2D.OverlapCircleAll(respawnPos.transform.Position2D(), minRespawnSpace);
+
                             bool addPoint = true;
                             foreach (var collider in colliders)
                             {
-                                if (unsafeRespawnLayers.IsInLayerMask(LayerMask.LayerToName(collider.gameObject.layer)))
+                                //we are allowing trigger colliders
+                                if (!collider.isTrigger)
                                 {
-                                    if (collider?.attachedRigidbody?.GetComponent<RespawnData>() == null)
-                                    {
-                                        addPoint = false;
-                                    }
+                                    addPoint = false;
+                                    continue;
                                 }
                             }
                             if (addPoint)
@@ -249,7 +257,7 @@ namespace Nevelson.Terrain
                         }
                         else
                         {
-                            Debug.Log("Filtering out unsafe respawn point " + respawnPos.name + "Room: " + respawnPos?.parent?.name);
+                            Debug.Log("Filtering out unsafe respawn point " + respawnPos.name);
                         }
                     }
 
@@ -297,9 +305,9 @@ namespace Nevelson.Terrain
             }
 
             //Checks if the map is respawn friendly
-            foreach (var value in Dictionaries.RespawnFriendlySortingLayers.Values)
+            foreach (var respawnSortLayer in Dictionaries.RespawnFriendlySortingLayers.Values)
             {
-                if (value == largestLayer)
+                if (respawnSortLayer == largestLayer)
                 {
                     return true;
                 }

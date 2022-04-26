@@ -46,6 +46,11 @@ namespace Nevelson.Terrain
                 return;
             }
 
+            if (tileProperties.IsMovingPlatform)
+            {
+                tileProperties.movePlatformVelocity = surfaceMap.transform.GetComponentInParent<IMovingPlatform>().MoveVelocity;
+            }
+
             previousTileData = tileProperties.ApplyTileProperties(rigidBody, moveVelocity, previousTileData, cellCenter, iPitfall);
         }
 
