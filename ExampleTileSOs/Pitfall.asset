@@ -25,7 +25,7 @@ MonoBehaviour:
   isPitfall: 1
   isMovingPlatform: 0
   moveType: 0
-  speedModifier: 0.5
+  speedModifier: 1
   applySpeedModInDir: 00000000010000000200000003000000
   onChangeToPhysicsSpeedReduction: 0.35
   knockbackRegainTransformControlThreshold: 0.35

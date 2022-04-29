@@ -22,10 +22,13 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 982846786fe63804094bec5744038ccf, type: 2}
   - {fileID: 11400000, guid: 97a54b7a6d201af46b7f751482372f98, type: 2}
   - {fileID: 11400000, guid: a92d1f9f3692d0c4d8171dd799fa42f2, type: 2}
+  isPitfall: 0
+  isMovingPlatform: 0
+  moveType: 1
   speedModifier: 1
   applySpeedModInDir: 00000000010000000200000003000000
-  currentMovementType: 1
   onChangeToPhysicsSpeedReduction: 0.35
   knockbackRegainTransformControlThreshold: 0.35
   conveyorBeltDir: 
   conveyorSpeed: 100
+  tileYOffset: 0.4

@@ -11,35 +11,37 @@ namespace Nevelson.Terrain
             { "BelowGround", 0 },
             { "Ground", 1 },
             { "Pitfall", 2 },
-            { "OverGround", 3 },
-            { "Wall", 4 },
-            { "Default", 5 },
+            { "MovingPlatform", 3 },
+            { "OverGround", 4 },
+            { "Wall", 5 },
+            { "Default", 6 },
         });
 
         public static ReadOnlyDictionary<string, int> SortingLayersNoWall = new ReadOnlyDictionary<string, int>(new Dictionary<string, int>(){
             { "BelowGround", 0 },
             { "Ground", 1 },
             { "Pitfall", 2 },
-            { "OverGround", 3 },
-            //{ "Wall", 4 },
-            { "Default", 5 },
+            { "MovingPlatform", 3 },
+            { "OverGround", 4 },
+            //{ "Wall", 5 },
+            { "Default", 6 },
         });
 
         public static ReadOnlyDictionary<string, int> RespawnFriendlySortingLayers = new ReadOnlyDictionary<string, int>(new Dictionary<string, int>() {
-        { "BelowGround", 0 },
-        { "Ground", 1 },
-        { "Pitfall", 2 }, //Moving platforms TAKE THIS LAYER TOO FOR SOME REASON + Oring in layer 100 SHOULD PROBABLY JUST ADD A SEPARATE LAYER FOR THEM :D I THIKN IT'S A RESULT OF LAZINESS
-        { "OverGround", 3 },
-        { "JumpPad", 4 },
-        //{ "ShortWall", 5 }, unfriendly
-        { "Decorations", 6 },
-        //{ "Effects", 7 }, unfriendly
-        //{ "Hidden", 8 }, unfriendly
-        //{ "Wall", 9 }, unfriendly
-        //{ "OverWall", 10 }, unfriendly
-        //{ "Default", 11 }, unfriendly
-        //{ "Foreground", 12 }, unfriendly
-    });
+            { "BelowGround", 0 },
+            { "Ground", 1 },
+            //{ "Pitfall", 2 }, unfriendly
+            { "MovingPlatform", 3 },
+            { "OverGround", 4 },
+            //{ "Wall", 5 }, unfriendly
+            { "Default", 6 },
+            //{ "Effects", 8 }, unfriendly
+            //{ "Hidden", 9 }, unfriendly
+            //{ "Wall", 10 }, unfriendly
+            //{ "OverWall", 11 }, unfriendly
+            //{ "Default", 12 }, unfriendly
+            //{ "Foreground", 13 }, unfriendly
+        });
 
         private static ReadOnlyDictionary<TileBase, TileData> dataFromTiles = null;
         public static ReadOnlyDictionary<TileBase, TileData> DataFromTiles

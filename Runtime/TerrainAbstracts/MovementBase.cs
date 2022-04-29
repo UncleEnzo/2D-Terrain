@@ -20,6 +20,7 @@ namespace Nevelson.Terrain
             rigidBody = GetComponent<Rigidbody2D>();
             iPitfall = GetComponent<IPitfall>();
             defaultTileProperties = Resources.Load(Constants.TILE_TYPES_PATH + Constants.DEFAULT_TILE) as TileData;
+            previousTileData = defaultTileProperties;
         }
 
         protected void TraverseTile(Vector2 moveVelocity)
@@ -62,60 +63,66 @@ namespace Nevelson.Terrain
                 return false;
             }
 
-            if (!TryGetSortLayerNoWall(mapsAtWorldPosition, out int largestLayer))
+            if (!TryGetTopSortLayerAtPos(mapsAtWorldPosition, Dictionaries.SortingLayersNoWall, out int surfaceLayer))
             {
                 return false;
             }
 
-            surfaceMap = GetSurfaceMap(largestLayer, mapsAtWorldPosition);
-            return true;
+            Tilemap[] topLayerTilemaps = GetTilemapsOfLayer(mapsAtWorldPosition, surfaceLayer);
+            if (topLayerTilemaps.Length == 0)
+            {
+                return false;
+            }
+            else if (topLayerTilemaps.Length == 1)
+            {
+                surfaceMap = topLayerTilemaps[0];
+                return true;
+            }
+            else
+            {
+                return GetLargestSortOrderTilemap(topLayerTilemaps, out surfaceMap);
+            }
         }
 
-        //Wrapper function that permits other sorting layer dictionary configurations
-        private bool TryGetSortLayerNoWall(List<Tilemap> mapsAtWorldPosition, out int largestSortLayer)
-        {
-            return TryGetSortLayerAtPos(mapsAtWorldPosition, Dictionaries.SortingLayersNoWall, out largestSortLayer);
-        }
-
-        private Tilemap GetSurfaceMap(int surfaceMapLayer, List<Tilemap> mapsAtWorldPosition)
+        private Tilemap[] GetTilemapsOfLayer(List<Tilemap> mapsAtWorldPosition, int targetSortLayer)
         {
             List<Tilemap> mapsOfTargetLayer = new List<Tilemap>();
-            int surfaceMapSortOrder = 0;
-            surfaceMapSortOrder = GetLargestTopLayerSortOrder(surfaceMapLayer, mapsAtWorldPosition, mapsOfTargetLayer, surfaceMapSortOrder);
-
-            foreach (var map in mapsOfTargetLayer)
-            {
-                int sortOrder = map.GetComponent<TilemapRenderer>().sortingOrder;
-                if (sortOrder == surfaceMapSortOrder)
-                {
-                    return map;
-                }
-            }
-            Debug.LogError("Could not get surface map");
-            return null;
-        }
-
-        private int GetLargestTopLayerSortOrder(int surfaceMapLayer, List<Tilemap> mapsAtWorldPosition, List<Tilemap> mapsOfTargetLayer, int surfaceMapSortOrder)
-        {
             foreach (var map in mapsAtWorldPosition)
             {
-                //Collect all of the tilemaps you're standing on that are top sorting layer
-                int newMapSortingLayer = Dictionaries.SortingLayers[map.GetComponent<TilemapRenderer>().sortingLayerName];
-                if (newMapSortingLayer != surfaceMapLayer)
+                string sortLayerName = map.GetComponent<TilemapRenderer>().sortingLayerName;
+                if (Dictionaries.SortingLayers[sortLayerName] == targetSortLayer)
                 {
-                    continue;
-                }
-                mapsOfTargetLayer.Add(map);
-
-                //Get largest sort order in top sorting layer
-                int newMapSortOrder = map.GetComponent<TilemapRenderer>().sortingOrder;
-                if (newMapSortOrder > surfaceMapSortOrder)
-                {
-                    surfaceMapSortOrder = newMapSortOrder;
+                    mapsOfTargetLayer.Add(map);
                 }
             }
 
-            return surfaceMapSortOrder;
+            return mapsOfTargetLayer.ToArray();
+        }
+
+
+        private bool GetLargestSortOrderTilemap(Tilemap[] sameLayerTilemaps, out Tilemap largestSortOrderTileMap)
+        {
+            //Setting to weird number so that it takes first layer as the reference for duplicate checking
+            int largestSortOrder = -10000000;
+            Tilemap largestTilemap = null;
+            foreach (var map in sameLayerTilemaps)
+            {
+                int newMapSortOrder = map.GetComponent<TilemapRenderer>().sortingOrder;
+                if (largestSortOrder == newMapSortOrder)
+                {
+                    Debug.LogError($"Tilemap collision occurred. {gameObject.name} is standing on 2 or more tiles maps with same sorting layer AND sort order.  Probably due to overlapping rooms.  Make sure tile maps {largestTilemap.name} and {map.name} don't overlap or change the sort order of one of them.");
+                    largestSortOrderTileMap = null;
+                    return false;
+                }
+                if (newMapSortOrder > largestSortOrder)
+                {
+                    largestTilemap = map;
+                    largestSortOrder = newMapSortOrder;
+                }
+            }
+
+            largestSortOrderTileMap = largestTilemap;
+            return true;
         }
 
         private bool TryGetTileData(TileBase tile, out TileData tileData)

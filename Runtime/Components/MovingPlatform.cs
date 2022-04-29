@@ -4,6 +4,8 @@ using static Nevelson.Terrain.Enums;
 
 namespace Nevelson.Terrain
 {
+    [RequireComponent(typeof(Rigidbody2D))]
+    [RequireComponent(typeof(TilemapSubscriber))]
     public class MovingPlatform : MonoBehaviour, IMovingPlatform
     {
         public Vector2 MoveVelocity { get => moveVelocity; }

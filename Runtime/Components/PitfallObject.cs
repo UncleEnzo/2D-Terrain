@@ -296,7 +296,7 @@ namespace Nevelson.Terrain
                 return false;
             }
 
-            if (!TryGetSortLayerAtPos(mapsAtWorldPosition, Dictionaries.SortingLayers, out int largestLayer))
+            if (!TryGetTopSortLayerAtPos(mapsAtWorldPosition, Dictionaries.SortingLayers, out int largestLayer))
             {
                 return true;
             }

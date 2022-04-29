@@ -91,7 +91,7 @@ namespace Nevelson.Terrain
 
             Vector2 moveVelocitySpeedAdjusted = ModifySpeedInDir(moveVelocity);
             moveVelocitySpeedAdjusted = ModifyConveyorBeltInDir(moveVelocitySpeedAdjusted, tilePos, rigidbody);
-            HandleMovement(rigidbody, moveVelocitySpeedAdjusted, moveType);
+            HandleMovement(rigidbody, moveVelocitySpeedAdjusted, previousTileData.moveType);
             return this;
         }
 
@@ -105,13 +105,13 @@ namespace Nevelson.Terrain
         {
             //Switching Physics to Transform: Reset velocity to prevent
             // object from shooting off at high speeds on first frame
-            if (moveType == MovementType.TRANSFORM && lastMovementType != moveType)
+            if (lastMovementType == MovementType.PHYSICS && moveType == MovementType.TRANSFORM)
             {
                 rigidbody.velocity = Vector2.zero;
             }
             //Switching Transform to Physics:  Lower Move Velocity to
             //prevent high momentum build up from physics on first frame
-            else if (moveType != lastMovementType)
+            else if (lastMovementType == MovementType.TRANSFORM && moveType == MovementType.PHYSICS)
             {
                 rigidbody.velocity = moveVelocity * onChangeToPhysicsSpeedReduction;
             }

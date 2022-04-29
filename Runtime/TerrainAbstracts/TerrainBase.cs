@@ -7,7 +7,7 @@ namespace Nevelson.Terrain
 {
     public abstract class TerrainBase : MonoBehaviour
     {
-        protected bool TryGetSortLayerAtPos(List<Tilemap> mapsAtWorldPosition, ReadOnlyDictionary<string, int> sortingLayers, out int sortingMapLayer)
+        protected bool TryGetTopSortLayerAtPos(List<Tilemap> mapsAtWorldPosition, ReadOnlyDictionary<string, int> sortingLayers, out int sortingMapLayer)
         {
             //Filters out tilemaps that are not in the specified sortingLayers dictionary
             for (int i = 0; i < mapsAtWorldPosition.Count; i++)

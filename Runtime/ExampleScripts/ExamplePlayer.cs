@@ -1,3 +1,4 @@
+using Nevelson.Utils;
 using UnityEngine;
 
 namespace Nevelson.Terrain
@@ -34,6 +35,7 @@ namespace Nevelson.Terrain
             Vector2 inputRaw = new Vector2(Input.GetAxisRaw("Horizontal"), Input.GetAxisRaw("Vertical"));
             SetSpriteRendererDirection(inputRaw.x);
             SetAnimationState(inputRaw);
+            FocusCameraOnPlayer();
         }
 
         private void SetSpriteRendererDirection(float inputRawX)
@@ -57,6 +59,11 @@ namespace Nevelson.Terrain
         private void SetAnimationState(Vector2 inputRaw)
         {
             anim.SetBool("isMoving", inputRaw != Vector2.zero);
+        }
+
+        private void FocusCameraOnPlayer()
+        {
+            Camera.main.transform.position = new Vector3(transform.position.x, transform.position.y, -10);
         }
 
         public bool PF_Check()
