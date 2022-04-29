@@ -12,7 +12,7 @@ namespace Nevelson.Terrain
     public class TileData : ScriptableObject
     {
         public TileBase[] TileSet { get => tileset; }
-        public bool IsMovingPlatform { get => IsMovingPlatform; }
+        public bool IsMovingPlatform { get => isMovingPlatform; }
         public Vector2 movePlatformVelocity { private get; set; } = Vector2.zero;
 
         [SerializeField] private TileBase[] tileset = new TileBase[0];

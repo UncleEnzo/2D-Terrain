@@ -29,15 +29,8 @@ namespace Nevelson.Terrain
         [SerializeField] private bool isDestroyedOnPitfall = true;
         [Tooltip("Example unsafe layers > Wall, Object")]
         [SerializeField] private LayerMask unsafeRespawnLayers;
-
-
-        //testing
-
+        [Tooltip("Minimum amount of space needed at respawn point for object to respawn")]
         [SerializeField] private float minRespawnSpace = .5f;
-
-        //testing
-
-
 
         private bool delayCompleted = false;
         private bool isFalling = false;
@@ -56,6 +49,10 @@ namespace Nevelson.Terrain
         {
             pitfallChecks = GetComponents<IPitfallCondition>();
             pitfallObjs = GetComponents<IPitfallStates>();
+            if (pitfallObjs == null || pitfallObjs.Length < 1)
+            {
+                Debug.LogError($"{gameObject.name} needs to implement IPitfallStates interface on top level for pitfall to work.");
+            }
             AfterPitfall += ResetFallingCheck;
             foreach (var pitfallObj in pitfallObjs)
             {

@@ -2,40 +2,19 @@ using UnityEngine;
 
 namespace Nevelson.Terrain
 {
-    public class ControllerMovement : MovementBase, IPitfallCondition, IPitfallStates
+    public abstract class ControllerMovement : MovementBase
     {
-        public Vector2 MoveVelocity { get; set; }
+        public Vector2 MoveVelocity { get; private set; }
         [SerializeField] private float defaultMoveSpeed = 7f;
 
-        //TODO: NOTE ON THESE : THEY CAN BE IMPLEMENTED ANYWHERE ON THE GAME OBJECT,
-        //DOES NOT HAVE TO BE ON THE MOVEMENT SCRIPT (PROBABLY SHOULDN"T
-        //SHOULD THIS BE UNITY EVENTS SO IT'S SERIALIZABLE??
-        public bool PF_Check()
+        protected virtual void FixedUpdate()
         {
-            throw new System.NotImplementedException();
-        }
-
-        public void PF_Before()
-        {
-            throw new System.NotImplementedException();
-        }
-
-        public void PF_During()
-        {
-            throw new System.NotImplementedException();
-        }
-
-        public void PF_After()
-        {
-            throw new System.NotImplementedException();
-        }
-
-        private void FixedUpdate()
-        {
-            Vector2 inputRaw = new Vector2(Input.GetAxisRaw("Horizontal"), Input.GetAxisRaw("Vertical"));
-            SetMovementVelocity(inputRaw);
+            Vector2 moveInput = SetMoveInput();
+            SetMovementVelocity(moveInput);
             TraverseTile(MoveVelocity);
         }
+
+        protected abstract Vector2 SetMoveInput();
 
         private void SetMovementVelocity(Vector2 moveInput)
         {

@@ -2,7 +2,6 @@ using Nevelson.Utils;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Tilemaps;
-using static Nevelson.Terrain.Enums;
 
 
 namespace Nevelson.Terrain
@@ -16,7 +15,7 @@ namespace Nevelson.Terrain
         private IPitfall iPitfall;
         private TileData previousTileData;
 
-        private void Awake()
+        protected virtual void Awake()
         {
             rigidBody = GetComponent<Rigidbody2D>();
             iPitfall = GetComponent<IPitfall>();
@@ -96,7 +95,7 @@ namespace Nevelson.Terrain
             return null;
         }
 
-        private static int GetLargestTopLayerSortOrder(int surfaceMapLayer, List<Tilemap> mapsAtWorldPosition, List<Tilemap> mapsOfTargetLayer, int surfaceMapSortOrder)
+        private int GetLargestTopLayerSortOrder(int surfaceMapLayer, List<Tilemap> mapsAtWorldPosition, List<Tilemap> mapsOfTargetLayer, int surfaceMapSortOrder)
         {
             foreach (var map in mapsAtWorldPosition)
             {

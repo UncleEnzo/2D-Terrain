@@ -1,30 +1,18 @@
+using UnityEngine;
+
 namespace Nevelson.Terrain
 {
-    public class ObjectMovement : MovementBase, IPitfallCondition, IPitfallStates
+    [RequireComponent(typeof(Rigidbody2D))]
+    public abstract class ObjectMovement : MovementBase
     {
-        //TODO: NOTE ON THESE : THEY CAN BE IMPLEMENTED ANYWHERE ON THE GAME OBJECT,
-        //DOES NOT HAVE TO BE ON THE MOVEMENT SCRIPT (PROBABLY SHOULDN"T)
-        public bool PF_Check()
+        protected Rigidbody2D rb;
+
+        protected virtual void Start()
         {
-            throw new System.NotImplementedException();
+            rb = GetComponent<Rigidbody2D>();
         }
 
-        public void PF_Before()
-        {
-            throw new System.NotImplementedException();
-        }
-
-        public void PF_During()
-        {
-            throw new System.NotImplementedException();
-        }
-
-        public void PF_After()
-        {
-            throw new System.NotImplementedException();
-        }
-
-        private void FixedUpdate()
+        protected virtual void FixedUpdate()
         {
             TraverseTile(rigidBody.velocity);
         }
