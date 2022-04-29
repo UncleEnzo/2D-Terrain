@@ -1,0 +1,34 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 79402a470b6815e4ca4a47a703ffe05d, type: 3}
+  m_Name: ConveyorRightPlatform
+  m_EditorClassIdentifier: 
+  tileset:
+  - {fileID: 11400000, guid: 7856242e482f16a4bb7d78160ba51bef, type: 2}
+  - {fileID: 11400000, guid: 9f212d7f6a3d24d4da5eb80741e2d5f1, type: 2}
+  - {fileID: 11400000, guid: 3d11274e7a6231342be29aec111ece75, type: 2}
+  - {fileID: 11400000, guid: b01c1ba3a3fd7d1479ee1d387de759a1, type: 2}
+  - {fileID: 11400000, guid: 0517f0ea7ad066f4992a93f151fb1c03, type: 2}
+  - {fileID: 11400000, guid: aa670eb9366f70f4b8e0de49d837216a, type: 2}
+  - {fileID: 11400000, guid: 078830ce440045e41b091d11f803c788, type: 2}
+  - {fileID: 11400000, guid: e86d3bf830731694092838a754a30a7d, type: 2}
+  - {fileID: 11400000, guid: 7948935c1d1060b43be479f87600a443, type: 2}
+  isPitfall: 0
+  isMovingPlatform: 1
+  moveType: 0
+  speedModifier: 1
+  applySpeedModInDir: 00000000010000000200000003000000
+  onChangeToPhysicsSpeedReduction: 0.35
+  knockbackRegainTransformControlThreshold: 0.35
+  conveyorBeltDir: 01000000
+  conveyorSpeed: 50
+  tileYOffset: 0.4
