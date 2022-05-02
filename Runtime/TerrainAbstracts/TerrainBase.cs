@@ -7,6 +7,48 @@ namespace Nevelson.Terrain
 {
     public abstract class TerrainBase : MonoBehaviour
     {
+        protected Vector2 GetTileCenter(Tilemap tilemap, Vector2 position)
+        {
+            Vector3Int gridPosition = tilemap.WorldToCell(position);
+            return tilemap.GetCellCenterWorld(gridPosition);
+        }
+
+        protected TileBase GetTileBaseOnPoint(Tilemap tilemap, Vector2 position)
+        {
+            Vector3Int gridPosition = tilemap.WorldToCell(position);
+            return tilemap.GetTile(gridPosition);
+        }
+
+        protected bool TryGetTopMapNoWall(Vector2 worldPosition, List<Tilemap> tileMaps, out Tilemap surfaceMap)
+        {
+            surfaceMap = null;
+            List<Tilemap> mapsAtWorldPosition = GetMapsAtPos(worldPosition, tileMaps);
+            if (mapsAtWorldPosition.Count == 0)
+            {
+                return false;
+            }
+
+            if (!TryGetTopSortLayerAtPos(mapsAtWorldPosition, Dictionaries.SortingLayersNoWall, out int surfaceLayer))
+            {
+                return false;
+            }
+
+            Tilemap[] topLayerTilemaps = GetTilemapsOfLayer(mapsAtWorldPosition, surfaceLayer);
+            if (topLayerTilemaps.Length == 0)
+            {
+                return false;
+            }
+            else if (topLayerTilemaps.Length == 1)
+            {
+                surfaceMap = topLayerTilemaps[0];
+                return true;
+            }
+            else
+            {
+                return GetLargestSortOrderTilemap(topLayerTilemaps, out surfaceMap);
+            }
+        }
+
         protected bool TryGetTopSortLayerAtPos(List<Tilemap> mapsAtWorldPosition, ReadOnlyDictionary<string, int> sortingLayers, out int sortingMapLayer)
         {
             //Filters out tilemaps that are not in the specified sortingLayers dictionary
@@ -63,6 +105,46 @@ namespace Nevelson.Terrain
                 mapsAtWorldPosition.Add(map);
             }
             return mapsAtWorldPosition;
+        }
+
+        private Tilemap[] GetTilemapsOfLayer(List<Tilemap> mapsAtWorldPosition, int targetSortLayer)
+        {
+            List<Tilemap> mapsOfTargetLayer = new List<Tilemap>();
+            foreach (var map in mapsAtWorldPosition)
+            {
+                string sortLayerName = map.GetComponent<TilemapRenderer>().sortingLayerName;
+                if (Dictionaries.SortingLayers[sortLayerName] == targetSortLayer)
+                {
+                    mapsOfTargetLayer.Add(map);
+                }
+            }
+
+            return mapsOfTargetLayer.ToArray();
+        }
+
+        private bool GetLargestSortOrderTilemap(Tilemap[] sameLayerTilemaps, out Tilemap largestSortOrderTileMap)
+        {
+            //Setting to weird number so that it takes first layer as the reference for duplicate checking
+            int largestSortOrder = -10000000;
+            Tilemap largestTilemap = null;
+            foreach (var map in sameLayerTilemaps)
+            {
+                int newMapSortOrder = map.GetComponent<TilemapRenderer>().sortingOrder;
+                if (largestSortOrder == newMapSortOrder)
+                {
+                    Debug.LogError($"Tilemap collision occurred. {gameObject.name} is standing on 2 or more tiles maps with same sorting layer AND sort order.  Probably due to overlapping rooms.  Make sure tile maps {largestTilemap.name} and {map.name} don't overlap or change the sort order of one of them.");
+                    largestSortOrderTileMap = null;
+                    return false;
+                }
+                if (newMapSortOrder > largestSortOrder)
+                {
+                    largestTilemap = map;
+                    largestSortOrder = newMapSortOrder;
+                }
+            }
+
+            largestSortOrderTileMap = largestTilemap;
+            return true;
         }
     }
 }

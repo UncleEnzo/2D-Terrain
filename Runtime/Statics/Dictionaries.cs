@@ -11,8 +11,8 @@ namespace Nevelson.Terrain
             { "BelowGround", 0 },
             { "Ground", 1 },
             { "Pitfall", 2 },
-            { "MovingPlatform", 3 },
-            { "OverGround", 4 },
+            { "OverGround", 3 },
+            { "MovingPlatform", 4 },
             { "Wall", 5 },
             { "Default", 6 },
         });
@@ -21,8 +21,8 @@ namespace Nevelson.Terrain
             { "BelowGround", 0 },
             { "Ground", 1 },
             { "Pitfall", 2 },
-            { "MovingPlatform", 3 },
-            { "OverGround", 4 },
+            { "OverGround", 3 },
+            { "MovingPlatform", 4 },
             //{ "Wall", 5 },
             { "Default", 6 },
         });
@@ -31,8 +31,8 @@ namespace Nevelson.Terrain
             { "BelowGround", 0 },
             { "Ground", 1 },
             //{ "Pitfall", 2 }, unfriendly
-            { "MovingPlatform", 3 },
-            { "OverGround", 4 },
+            { "OverGround", 3 },
+            { "MovingPlatform", 4 },
             //{ "Wall", 5 }, unfriendly
             { "Default", 6 },
             //{ "Effects", 8 }, unfriendly

@@ -22,8 +22,6 @@ namespace Nevelson.Terrain
 
         [Tooltip("How much time object has to exit pit before fall is triggered.")]
         [SerializeField] private float pitfallRecoveryTime = 0f;
-        [Tooltip("Distance obj autorespawns from pit")]
-        [SerializeField] private float respawnDistFromPit = 2;
         [Tooltip("Controls how quickly the falling animations player")]
         [SerializeField] private float pitfallAnimSpeed = .015f;
         [SerializeField] private bool isDestroyedOnPitfall = true;
@@ -32,14 +30,17 @@ namespace Nevelson.Terrain
         [Tooltip("Minimum amount of space needed at respawn point for object to respawn")]
         [SerializeField] private float minRespawnSpace = .5f;
 
+
+        [Tooltip("How many safe tiles do we store from the past, less tiles is more performant, but more change of returning error")]
+        [SerializeField] [Range(2, 10)] private int cachedSafeTilesCount = 3;
+        [SerializeField] public TilePosition[] safeTiles;
+
+
         private bool delayCompleted = false;
         private bool isFalling = false;
         private bool isFirstPitContact = true;
         private IPitfallCondition[] pitfallChecks;
         private IPitfallStates[] pitfallObjs;
-        private Vector2 lastPosition = Vector2.zero;
-        private Vector2 lastNonZeroMoveDirection = Vector2.zero;
-        private Vector2 dynamicRespawnPos = Vector2.zero;
         private Action BeforePitfall;
         private Action DuringPitfall;
         private Action AfterPitfall;
@@ -47,6 +48,7 @@ namespace Nevelson.Terrain
 
         private void OnEnable()
         {
+            safeTiles = new TilePosition[cachedSafeTilesCount];
             pitfallChecks = GetComponents<IPitfallCondition>();
             pitfallObjs = GetComponents<IPitfallStates>();
             if (pitfallObjs == null || pitfallObjs.Length < 1)
@@ -72,9 +74,54 @@ namespace Nevelson.Terrain
             }
         }
 
-        private void LateUpdate()
+        private void FixedUpdate()
         {
-            DetermineRespawnLocation();
+            if (respawnMode == RespawnMode.AUTOMATIC)
+            {
+                CollectLatestSafeTiles();
+            }
+        }
+
+        private void CollectLatestSafeTiles()
+        {
+            if (isFalling)
+            {
+                return;
+            }
+
+            if (!IsPositionRespawnFriendly(transform.Position2D(), LevelTerrain.Tilemaps))
+            {
+                return;
+            }
+
+            if (!TryGetTopMapNoWall(transform.Position2D(), LevelTerrain.Tilemaps, out Tilemap topTileMap))
+            {
+                return;
+            }
+
+            bool isDone = false;
+            for (int i = 0; i < safeTiles.Length; i++)
+            {
+                if (safeTiles[i] == null)
+                {
+                    safeTiles[i] = new TilePosition(topTileMap, transform.Position2D());
+                    isDone = true;
+                    break;
+                }
+
+                Vector2 currentTilePos = GetTileCenter(topTileMap, transform.Position2D());
+                if (currentTilePos == safeTiles[i].World2D)
+                {
+                    return;
+                }
+            }
+
+            //Shifts array and places latest tile in last position
+            if (!isDone)
+            {
+                Array.Copy(safeTiles, 1, safeTiles, 0, safeTiles.Length - 1);
+                safeTiles[safeTiles.Length - 1] = new TilePosition(topTileMap, transform.Position2D());
+            }
         }
 
         public void OnFixedUpdate_TriggerPitfall(bool triggerImmediate = false)
@@ -102,7 +149,6 @@ namespace Nevelson.Terrain
 
             if (isFirstPitContact)
             {
-                dynamicRespawnPos = GetDynamicRespawnLocation();
                 isFirstPitContact = false;
             }
 
@@ -120,7 +166,6 @@ namespace Nevelson.Terrain
             switch (respawnMode)
             {
                 case RespawnMode.AUTOMATIC:
-                    //ToDo: Not implemented yet. I don't like how we CHOOSE the dynamic location.  need to make it a position the player was at X seconds agos
                     StartCoroutine(AutomaticFallingCo());
                     break;
                 case RespawnMode.MANUAL:
@@ -148,22 +193,6 @@ namespace Nevelson.Terrain
             isFalling = false;
         }
 
-        private void DetermineRespawnLocation()
-        {
-            if (transform.Position2D() != lastPosition)
-            {
-                Vector2 moveDirection = (transform.Position2D() - lastPosition).normalized;
-                if (moveDirection != Vector2.zero) lastNonZeroMoveDirection = moveDirection;
-            }
-            lastPosition = transform.Position2D();
-        }
-
-        private Vector2 GetDynamicRespawnLocation()
-        {
-            return transform.Position2D() +
-                               -(lastNonZeroMoveDirection * respawnDistFromPit);
-        }
-
         private IEnumerator DelayPitfallCo()
         {
             yield return new WaitForSeconds(pitfallRecoveryTime);
@@ -173,29 +202,52 @@ namespace Nevelson.Terrain
             delayPitfallCo = null;
         }
 
-        //ToDO: NOT IMPLEMENTED YET, NEED TO FIGURE OUT A CLEANER DYNAMIC REPOSITION
-        //LOOK TO BRACKEY'S VIDEO ON REWIND FEATURE AND MAYBE USE THAT POSITION TRACKING TO DETERMINE
-        //THEN ADD X SECONDS AGO SO IT'S NOT RIGHT NEXT TO THE PIT
-        //Edge cases to note:
-        //  Tilemap moves or updates, what is the failsafe?
-        //  Last location was equally dangerous
-        //  Pitfalls immediately after other pitfall
         private IEnumerator AutomaticFallingCo()
         {
             Vector2 scaleReduction = new Vector2(pitfallAnimSpeed, pitfallAnimSpeed);
-            while (gameObject.transform.LocalScale2D().x > 0)
+            while (transform.LocalScale2D().x > 0)
             {
-                gameObject.transform.LocalScale2D(gameObject.transform.LocalScale2D() - scaleReduction);
+                transform.LocalScale2D(transform.LocalScale2D() - scaleReduction);
                 yield return new WaitForSeconds(.01f);
             }
             yield return new WaitForSecondsRealtime(.1f);
-
             DuringPitfall();
 
             if (!isDestroyedOnPitfall)
             {
                 yield return new WaitForSecondsRealtime(.6f);
-                transform.Position2D(dynamicRespawnPos);
+
+                bool isTransformSet = false;
+                for (int i = safeTiles.Length - 1; i >= 0; i--)
+                {
+                    if (safeTiles[i] == null)
+                    {
+                        continue;
+                    }
+
+                    if (!IsPosFree(safeTiles[i].World2D))
+                    {
+                        continue;
+                    }
+
+                    transform.Position2D(safeTiles[i].World2D);
+                    isTransformSet = true;
+                    break;
+                }
+
+                if (!isTransformSet)
+                {
+                    Debug.LogError("Could not find safe place to respawn.  Cached safe tiles must have objects over them.  Recommend increasing cache safe tile count or decreasing space required for object to respawn");
+                    if (customRespawnLocations.Length != 0)
+                    {
+                        transform.Position2D(customRespawnLocations[0].Position2D());
+                    }
+                    else
+                    {
+                        transform.Position2D(Vector2.zero);
+                    }
+                }
+
                 AfterPitfall();
                 transform.LocalScale2D(Vector2.one);
             }
@@ -207,7 +259,6 @@ namespace Nevelson.Terrain
         }
 
         //TODO:
-        //   -Clean this
         //   -Need a better way to set Custom Respawn Points array to this component
         //   -Need better way to set pitfallPosition
         private IEnumerator ManualFallingCo(Transform[] respawnLocationTransform, List<Tilemap> tilemaps)
@@ -232,21 +283,9 @@ namespace Nevelson.Terrain
                 {
                     foreach (var respawnPos in respawnLocationTransform)
                     {
-                        if (IsRespawnFriendlyMap(respawnPos.transform.Position2D(), tilemaps))
+                        if (IsPositionRespawnFriendly(respawnPos.transform.Position2D(), tilemaps))
                         {
-                            //Double check there is enough space for the obj to respawn
-                            Collider2D[] colliders = Physics2D.OverlapCircleAll(respawnPos.transform.Position2D(), minRespawnSpace);
-
-                            bool addPoint = true;
-                            foreach (var collider in colliders)
-                            {
-                                //we are allowing trigger colliders
-                                if (!collider.isTrigger)
-                                {
-                                    addPoint = false;
-                                    continue;
-                                }
-                            }
+                            bool addPoint = IsPosFree(respawnPos.transform.Position2D());
                             if (addPoint)
                             {
                                 respawnFriendlyPoints.Add(respawnPos);
@@ -288,7 +327,26 @@ namespace Nevelson.Terrain
             }
         }
 
-        private bool IsRespawnFriendlyMap(Vector2 worldPosition, List<Tilemap> tileMaps)
+        private bool IsPosFree(Vector2 respawnPos)
+        {
+            //Double check there is enough space for the obj to respawn
+            Collider2D[] colliders = Physics2D.OverlapCircleAll(respawnPos, minRespawnSpace);
+
+            bool addPoint = true;
+            foreach (var collider in colliders)
+            {
+                //we are allowing trigger colliders
+                if (!collider.isTrigger)
+                {
+                    addPoint = false;
+                    continue;
+                }
+            }
+
+            return addPoint;
+        }
+
+        private bool IsPositionRespawnFriendly(Vector2 worldPosition, List<Tilemap> tileMaps)
         {
             List<Tilemap> mapsAtWorldPosition = GetMapsAtPos(worldPosition, tileMaps);
             if (mapsAtWorldPosition.Count == 0)
@@ -309,7 +367,6 @@ namespace Nevelson.Terrain
                     return true;
                 }
             }
-
             return false;
         }
     }

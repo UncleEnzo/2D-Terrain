@@ -363,5 +363,6 @@ MonoBehaviour:
   isDestroyedOnPitfall: 0
   unsafeRespawnLayers:
     serializedVersion: 2
-    m_Bits: 0
+    m_Bits: 72
   minRespawnSpace: 0.5
+  cachedSafeTilesCount: 3
