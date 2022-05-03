@@ -1,4 +1,5 @@
 using Nevelson.Utils;
+using Sirenix.OdinInspector;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -13,36 +14,32 @@ namespace Nevelson.Terrain
         [Tooltip("Example unsafe layers > Wall, Object")]
         [SerializeField] private LayerMask unsafeRespawnLayers;
 
-        //STUFF ABOVE IS STILL IN DEVELOPMENT
+        //THIS STUFF ABOVE IS STILL IN DEVELOPMENT
 
 
         [SerializeField] private RespawnMode respawnMode = RespawnMode.MANUAL;
-        [SerializeField] private bool isDestroyedOnPitfall = true;
+        [SerializeField] private bool destroyOnPitfall = true;
 
-        //if destroy on pitfall then hide:
+        [HideIf("destroyOnPitfall")]
         [Tooltip("How much time object has to exit pit before fall is triggered.")]
         [SerializeField] private float pitfallRecoveryTime = .15f;
+        [HideIf("destroyOnPitfall")]
         [Tooltip("Controls how quickly the falling animations player")]
         [SerializeField] private float pitfallAnimSpeed = .015f;
+        [HideIf("destroyOnPitfall")]
         [Tooltip("Minimum amount of space needed at respawn point for object to respawn")]
         [SerializeField] private float minRespawnSpace = .5f;
 
-        //If destroy on pitfall or automatic, hide this
+        [HideIf("@this.destroyOnPitfall || this.respawnMode == Nevelson.Terrain.Enums.RespawnMode.AUTOMATIC")]
         [Tooltip("Position from where to check for closest respawn points. Generally should be world position where object has fallen unless you need to keep the respawn near a specific cluster of custom respawn points. At Vector2.zero this field updates automatically to object position.")]
         [SerializeField] private Vector2 pitfallLocation = Vector2.zero;
+        [HideIf("@this.destroyOnPitfall || this.respawnMode == Nevelson.Terrain.Enums.RespawnMode.AUTOMATIC")]
         [Tooltip("The transform locations where objects respawn. This value can be changed at runtime.")]
         [SerializeField] private Transform[] respawnLocations;
 
-
-
-        //if destroy on pitfall or Manual hide this
-        [Header("Automatic mode values")]
+        [HideIf("@this.destroyOnPitfall || this.respawnMode == Nevelson.Terrain.Enums.RespawnMode.MANUAL")]
         [Tooltip("How many safe tiles do we store from the past, less tiles is more performant, but more change of returning error")]
         [SerializeField] [Range(2, 10)] private int cachedSafeTiles = 3;
-        private TilePosition[] safeTiles;
-
-
-
 
         private bool delayCompleted = false;
         private bool isFalling = false;
@@ -53,6 +50,7 @@ namespace Nevelson.Terrain
         private Action DuringPitfall;
         private Action AfterPitfall;
         private Coroutine delayPitfallCo = null;
+        private TilePosition[] safeTiles;
 
         private void OnEnable()
         {
@@ -154,6 +152,11 @@ namespace Nevelson.Terrain
 
         private void GetLastSafeTiles()
         {
+            if (destroyOnPitfall)
+            {
+                return;
+            }
+
             if (respawnMode != RespawnMode.AUTOMATIC)
             {
                 return;
@@ -224,7 +227,7 @@ namespace Nevelson.Terrain
             yield return new WaitForSecondsRealtime(.1f);
             DuringPitfall();
 
-            if (isDestroyedOnPitfall)
+            if (destroyOnPitfall)
             {
                 AfterPitfall();
                 Destroy(gameObject);
@@ -279,7 +282,7 @@ namespace Nevelson.Terrain
 
             DuringPitfall();
 
-            if (isDestroyedOnPitfall)
+            if (destroyOnPitfall)
             {
                 AfterPitfall();
                 Destroy(gameObject);
