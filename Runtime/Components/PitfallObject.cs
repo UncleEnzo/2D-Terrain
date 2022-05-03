@@ -52,8 +52,9 @@ namespace Nevelson.Terrain
         private Coroutine delayPitfallCo = null;
         private TilePosition[] safeTiles;
 
-        private void OnEnable()
+        protected override void OnEnable()
         {
+            base.OnEnable();
             safeTiles = new TilePosition[cachedSafeTiles];
             pitfallChecks = GetComponents<IPitfallCondition>();
             pitfallObjs = GetComponents<IPitfallStates>();
@@ -371,20 +372,12 @@ namespace Nevelson.Terrain
                 return false;
             }
 
-            if (!TryGetTopSortLayerAtPos(mapsAtWorldPosition, Dictionaries.SortingLayers, out int largestLayer))
+            if (!TryGetTopSortLayerAtPos(mapsAtWorldPosition, sortingLayers, out int largestLayer))
             {
                 return true;
             }
 
-            //Checks if the map is respawn friendly
-            foreach (var respawnSortLayer in Dictionaries.RespawnFriendlySortingLayers.Values)
-            {
-                if (respawnSortLayer == largestLayer)
-                {
-                    return true;
-                }
-            }
-            return false;
+            return sortingLayers.IsRespawnFriendly(largestLayer);
         }
     }
 }

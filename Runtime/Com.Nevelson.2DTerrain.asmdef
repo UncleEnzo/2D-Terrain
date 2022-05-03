@@ -2,7 +2,8 @@
     "name": "Com.Nevelson.2DTerrain",
     "rootNamespace": "",
     "references": [
-        "GUID:213cb3b80beb19946ad3845399f38eff"
+        "GUID:213cb3b80beb19946ad3845399f38eff",
+        "GUID:f6772791f1e9e2041b58a4d8602de722"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

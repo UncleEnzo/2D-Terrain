@@ -8,7 +8,7 @@ using static Nevelson.Utils.Enums;
 
 namespace Nevelson.Terrain
 {
-    [CreateAssetMenu(fileName = "TileDataSO", menuName = "TerrainTile/TileDataSO")]
+    [CreateAssetMenu(fileName = "TileDataSO", menuName = "Terrain/Tile/TileDataSO")]
     public class TileData : ScriptableObject
     {
         public TileBase[] TileSet { get => tileset; }

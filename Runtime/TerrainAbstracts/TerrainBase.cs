@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using UnityEngine;
 using UnityEngine.Tilemaps;
 
@@ -7,6 +6,17 @@ namespace Nevelson.Terrain
 {
     public abstract class TerrainBase : MonoBehaviour
     {
+        protected SortingLayers sortingLayers;
+        protected virtual void OnEnable()
+        {
+            SortingLayers layersSO = Resources.Load(Constants.SORTING_LAYERS_PATH) as SortingLayers;
+            if (layersSO == null)
+            {
+                Debug.LogError($"Could not load layers scriptable object.  Create a SortingLayers ScriptableObject called SortingLayers in your Resources/ScriptableObjects/ folder");
+            }
+            sortingLayers = layersSO;
+        }
+
         protected Vector2 GetTileCenter(Tilemap tilemap, Vector2 position)
         {
             Vector3Int gridPosition = tilemap.WorldToCell(position);
@@ -28,7 +38,8 @@ namespace Nevelson.Terrain
                 return false;
             }
 
-            if (!TryGetTopSortLayerAtPos(mapsAtWorldPosition, Dictionaries.SortingLayersNoWall, out int surfaceLayer))
+            //NOTE: THIS NEEDS TO BE EXCLUDABLE CAUSE WE'RE PASSING IN A SPECIAL DICT HERE
+            if (!TryGetTopSortLayerAtPos(mapsAtWorldPosition, sortingLayers, out int surfaceLayer, true))
             {
                 return false;
             }
@@ -49,13 +60,13 @@ namespace Nevelson.Terrain
             }
         }
 
-        protected bool TryGetTopSortLayerAtPos(List<Tilemap> mapsAtWorldPosition, ReadOnlyDictionary<string, int> sortingLayers, out int sortingMapLayer)
+        protected bool TryGetTopSortLayerAtPos(List<Tilemap> mapsAtWorldPosition, SortingLayers sortingLayers, out int sortingMapLayer, bool excludeTopLayers = false)
         {
             //Filters out tilemaps that are not in the specified sortingLayers dictionary
             for (int i = 0; i < mapsAtWorldPosition.Count; i++)
             {
                 string sortingName = mapsAtWorldPosition[i].GetComponent<TilemapRenderer>().sortingLayerName;
-                if (!sortingLayers.ContainsKey(sortingName))
+                if (!sortingLayers.ContainsKey(sortingName, excludeTopLayers))
                 {
                     mapsAtWorldPosition.Remove(mapsAtWorldPosition[i]);
                 }
@@ -68,13 +79,14 @@ namespace Nevelson.Terrain
                 return false;
             }
 
-            int surfaceMapLayer = sortingLayers[mapsAtWorldPosition[0].GetComponent<TilemapRenderer>().sortingLayerName];
+            string sortingLayer = mapsAtWorldPosition[0].GetComponent<TilemapRenderer>().sortingLayerName;
+            int surfaceMapLayer = sortingLayers.GetValue(sortingLayer, excludeTopLayers);
             foreach (var map in mapsAtWorldPosition)
             {
                 //Greatest sorting layer of maps so only movement properties from top layer are applied
                 //i.e Ground tile over Pit tile, only applies ground movement
                 string sortingLayerName = map.GetComponent<TilemapRenderer>().sortingLayerName;
-                if (!sortingLayers.TryGetValue(sortingLayerName, out int newMapSortingLayer))
+                if (!sortingLayers.TryGetValue(sortingLayerName, out int newMapSortingLayer, excludeTopLayers))
                 {
                     Debug.LogError("Sorting layer: " + sortingLayerName + " doesn't exist in sorting layers dictionary.");
                     sortingMapLayer = -1;
@@ -113,7 +125,7 @@ namespace Nevelson.Terrain
             foreach (var map in mapsAtWorldPosition)
             {
                 string sortLayerName = map.GetComponent<TilemapRenderer>().sortingLayerName;
-                if (Dictionaries.SortingLayers[sortLayerName] == targetSortLayer)
+                if (sortingLayers.GetValue(sortLayerName) == targetSortLayer)
                 {
                     mapsOfTargetLayer.Add(map);
                 }
