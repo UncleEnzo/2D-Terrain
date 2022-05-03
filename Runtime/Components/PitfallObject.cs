@@ -11,14 +11,10 @@ namespace Nevelson.Terrain
 {
     public class PitfallObject : TerrainBase, IPitfall
     {
-        [Tooltip("Example unsafe layers > Wall, Object")]
-        [SerializeField] private LayerMask unsafeRespawnLayers;
-
-        //THIS STUFF ABOVE IS STILL IN DEVELOPMENT
-
-
-        [SerializeField] private RespawnMode respawnMode = RespawnMode.MANUAL;
         [SerializeField] private bool destroyOnPitfall = true;
+
+        [HideIf("destroyOnPitfall")]
+        [SerializeField] private RespawnMode respawnMode = RespawnMode.MANUAL;
 
         [HideIf("destroyOnPitfall")]
         [Tooltip("How much time object has to exit pit before fall is triggered.")]

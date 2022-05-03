@@ -5,7 +5,7 @@ using UnityEngine.Tilemaps;
 
 namespace Nevelson.Terrain
 {
-    public static class Dictionaries
+    public static class Tiles
     {
         private static ReadOnlyDictionary<TileBase, TileData> dataFromTiles = null;
         public static ReadOnlyDictionary<TileBase, TileData> DataFromTiles

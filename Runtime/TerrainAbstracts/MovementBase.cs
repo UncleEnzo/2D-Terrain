@@ -17,7 +17,7 @@ namespace Nevelson.Terrain
         {
             rigidBody = GetComponent<Rigidbody2D>();
             iPitfall = GetComponent<IPitfall>();
-            defaultTileProperties = Resources.Load(Constants.TILE_TYPES_PATH + Constants.DEFAULT_TILE) as TileData;
+            defaultTileProperties = Resources.Load(Constants.TILE_TYPES_PATH + Constants.DEFAULT_TILE_PATH) as TileData;
             previousTileData = defaultTileProperties;
         }
 
@@ -60,7 +60,7 @@ namespace Nevelson.Terrain
                 return false;
             }
 
-            if (!Dictionaries.DataFromTiles.TryGetValue(tile, out tileData))
+            if (!Tiles.DataFromTiles.TryGetValue(tile, out tileData))
             {
                 return false;
             }
