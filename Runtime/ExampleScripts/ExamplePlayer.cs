@@ -1,13 +1,11 @@
-using Nevelson.Utils;
 using UnityEngine;
-using UnityEngine.Tilemaps;
 
 namespace Nevelson.Terrain
 {
     [RequireComponent(typeof(Rigidbody2D))]
     [RequireComponent(typeof(AudioSource))]
     [RequireComponent(typeof(ExampleUnityInputControllerMove))]
-    public class ExamplePlayer : MonoBehaviour, IPitfallCondition, IPitfallStates
+    public class ExamplePlayer : MonoBehaviour, IPitfallCondition, IPitfallStates, IInteractTiles
     {
         [Header("Example condition where player may not fall into pit")]
         [SerializeField] private bool isHovering = false;
@@ -16,6 +14,9 @@ namespace Nevelson.Terrain
         [Header("Takes damage on pitfall")]
         [SerializeField] private AudioClip fallingSound;
         [SerializeField] private AudioClip hitSound;
+        [SerializeField] TileData pitfallInteract;
+        [SerializeField] TileData interactableTile1;
+        [SerializeField] TileData interactableTile2;
 
         private Animator anim;
         private SpriteRenderer spriteRenderer;
@@ -87,6 +88,33 @@ namespace Nevelson.Terrain
         {
             audioSource.PlayOneShot(hitSound);
             movement.enabled = true;
+        }
+
+        public void InteractWithTile(TileData tileData)
+        {
+            if (tileData == pitfallInteract)
+            {
+                if (Input.GetKeyDown(KeyCode.Space))
+                {
+                    Debug.Log("Treading Water!");
+                }
+            }
+
+            if (tileData == interactableTile1)
+            {
+                if (Input.GetKeyDown(KeyCode.Space))
+                {
+                    Debug.Log("InteractTileOne Interaction Triggered!");
+                }
+            }
+
+            if (tileData == interactableTile2)
+            {
+                if (Input.GetKeyDown(KeyCode.Space))
+                {
+                    Debug.Log("I pressed space on interaction tile 2!");
+                }
+            }
         }
     }
 }

@@ -43,6 +43,7 @@ MonoBehaviour:
     - OverGround
     - Wall
     - Default
+    - InteractableTiles
     _keys:
     - BelowGround
     - Ground
@@ -51,7 +52,8 @@ MonoBehaviour:
     - OverGround
     - Wall
     - Default
-    _values: 00000000010000000200000004000000030000000500000006000000
+    - InteractableTiles
+    _values: 0000000001000000020000000500000003000000060000000700000004000000
   excludeTopLayers:
   - Wall
   respawnUnfriendly:

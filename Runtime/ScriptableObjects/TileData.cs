@@ -13,11 +13,12 @@ namespace Nevelson.Terrain
     {
         public TileBase[] TileSet { get => tileset; }
         public bool IsMovingPlatform { get => isMovingPlatform; }
-        public Vector2 movePlatformVelocity { private get; set; } = Vector2.zero;
+        public Vector2 MovePlatformVelocity { private get; set; } = Vector2.zero;
 
         [SerializeField] private TileBase[] tileset = new TileBase[0];
         [SerializeField] private bool isPitfall = false;
         [SerializeField] private bool isMovingPlatform = false;
+        [SerializeField] private bool isInteractable = false;
 
         [Tooltip("Type of movement this tile uses. Transform is snappier. Physics is more fun :)")]
         [SerializeField] private MovementType moveType = MovementType.TRANSFORM;
@@ -45,6 +46,8 @@ namespace Nevelson.Terrain
         [Range(-300, 300)] [SerializeField] private int conveyorSpeed = 100;
         [Range(0, .45f)] [SerializeField] private float tileYOffset = .4f;
 
+        private bool isCurrentlyFalling = false;
+
         void OnValidate()
         {
             if (applySpeedModInDir.Length != applySpeedModInDir.Distinct().Count())
@@ -65,6 +68,23 @@ namespace Nevelson.Terrain
             }
         }
 
+        public bool ApplyTileInteraction(IInteractTiles iInteractTiles)
+        {
+            if (!isInteractable)
+            {
+                return false;
+            }
+
+            //allows for pitfall tile interaction until character has begun falling
+            //Example utility: Treading water
+            if (isCurrentlyFalling)
+            {
+                return false;
+            }
+
+            iInteractTiles.InteractWithTile(this);
+            return true;
+        }
 
         public TileData ApplyTileProperties(Rigidbody2D rigidbody, Vector2 moveVelocity, TileData previousTileData, Vector2 tilePos, IPitfall iPitfall)
         {
@@ -72,16 +92,16 @@ namespace Nevelson.Terrain
             {
                 if (iPitfall != null)
                 {
-                    //Conditions for immediate drop.
-                    //To prevent edgecase where pitfall delay + moving platform phyics push player 
-                    //back onto platform in continous loop
-
                     //Moving Platform and previous tile is conveyor
                     bool triggerImmediateForConveyor = previousTileData.isMovingPlatform && previousTileData.conveyorBeltDir.Length > 0;
                     //Moving Platform and previous tile is ice.
                     bool triggerImmediateForPhysics = previousTileData.isMovingPlatform && previousTileData.moveType != MovementType.TRANSFORM;
 
-                    iPitfall.OnFixedUpdate_TriggerPitfall(triggerImmediateForConveyor || triggerImmediateForPhysics);
+
+                    //ISSUE: BIG ISSUE HERE
+                    //NOTE: There will be a bug with this where if any of the tilebases
+                    //have someone falling Then all tiles will be locked off for interaction
+                    isCurrentlyFalling = iPitfall.OnFixedUpdate_TriggerPitfall(triggerImmediateForConveyor || triggerImmediateForPhysics);
                 }
                 else
                 {
@@ -122,7 +142,7 @@ namespace Nevelson.Terrain
             if (isMovingPlatform)
             {
                 //Handle moving platforms
-                moveVelocity += movePlatformVelocity;
+                moveVelocity += MovePlatformVelocity;
             }
 
             if (moveType == MovementType.TRANSFORM)

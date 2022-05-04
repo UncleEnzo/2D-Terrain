@@ -39,7 +39,6 @@ namespace Nevelson.Terrain
 
         private bool delayCompleted = false;
         private bool isFalling = false;
-        private bool isFirstPitContact = true;
         private IPitfallCondition[] pitfallChecks;
         private IPitfallStates[] pitfallObjs;
         private Action BeforePitfall;
@@ -82,13 +81,13 @@ namespace Nevelson.Terrain
             GetLastSafeTiles();
         }
 
-        public void OnFixedUpdate_TriggerPitfall(bool triggerImmediate = false)
+        public bool OnFixedUpdate_TriggerPitfall(bool triggerImmediate = false)
         {
             foreach (var pitfallCheck in pitfallChecks)
             {
                 if (!pitfallCheck.PF_Check())
                 {
-                    return;
+                    return isFalling;
                 }
             }
 
@@ -101,18 +100,13 @@ namespace Nevelson.Terrain
 
                 if (!delayCompleted || isFalling)
                 {
-                    return;
+                    return isFalling;
                 }
-            }
-
-            if (isFirstPitContact)
-            {
-                isFirstPitContact = false;
             }
 
             if (isFalling)
             {
-                return;
+                return isFalling;
             }
             else
             {
@@ -133,7 +127,7 @@ namespace Nevelson.Terrain
                     Debug.LogError("Specified Respawn Mode Doesn't Exist.");
                     break;
             }
-            isFirstPitContact = true;
+            return isFalling;
         }
 
         public void SetManualPitfallLocations(Transform[] respawnLocations, Vector2 pitfallLocation)

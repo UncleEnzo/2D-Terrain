@@ -212,6 +212,9 @@ MonoBehaviour:
   health: 10
   fallingSound: {fileID: 8300000, guid: e94537a1e0922a1479e6f2c88487654d, type: 3}
   hitSound: {fileID: 8300000, guid: ab50df9d06f92f24d8e17996eee77372, type: 3}
+  pitfallInteract: {fileID: 11400000, guid: 4900cf123fb7efc4a89e41030e7c9a4c, type: 2}
+  interactableTile1: {fileID: 11400000, guid: 6f8b575b9f0e13f4ca684beb230adeea, type: 2}
+  interactableTile2: {fileID: 11400000, guid: a721af0012b2c92478011b31ed230aa1, type: 2}
 --- !u!114 &8250345270141551912
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -354,15 +357,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b3941770e96d07f46b9623dd51152a51, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  destroyOnPitfall: 1
   respawnMode: 0
-  pitfallPosition: {x: 0, y: 0}
-  customRespawnLocations: []
   pitfallRecoveryTime: 0
-  respawnDistFromPit: 2
   pitfallAnimSpeed: 0.015
-  isDestroyedOnPitfall: 0
-  unsafeRespawnLayers:
-    serializedVersion: 2
-    m_Bits: 72
   minRespawnSpace: 0.5
-  cachedSafeTilesCount: 3
+  pitfallLocation: {x: 0, y: 0}
+  respawnLocations: []
+  cachedSafeTiles: 3
