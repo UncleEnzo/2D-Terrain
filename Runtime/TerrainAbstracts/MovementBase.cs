@@ -15,7 +15,6 @@ namespace Nevelson.Terrain
         private TileData defaultTileProperties;
         private TileData previousTileData;
         private Tilemap surfaceMap;
-        private bool interactOccurred = false;
 
         protected virtual void Awake()
         {
@@ -28,33 +27,31 @@ namespace Nevelson.Terrain
 
         protected virtual void Update()
         {
-
-
-            //This will be passing in the Interface
-            //need to prevent it from occuring multiple times in a frame
-            interactOccurred = ValidateTileInteraction();
+            ValidateTileInteraction();
         }
 
-        private bool ValidateTileInteraction()
+        private void ValidateTileInteraction()
         {
             if (iInteractTiles == null)
             {
-                return false;
+                return;
             }
 
             if (surfaceMap == null)
             {
-                return false;
+                iInteractTiles.InteractWithTile(null, false);
+                return;
             }
 
             TileBase tile = GetTileBaseOnPoint(surfaceMap, transform.Position2D());
 
             if (tile == null || !Tiles.DataFromTiles.TryGetValue(tile, out TileData tileProperties))
             {
-                return defaultTileProperties.ApplyTileInteraction(iInteractTiles);
+                defaultTileProperties.ApplyTileInteraction(iInteractTiles);
+                return;
             }
 
-            return tileProperties.ApplyTileInteraction(iInteractTiles);
+            tileProperties.ApplyTileInteraction(iInteractTiles);
         }
 
         protected void TraverseTile(Vector2 moveVelocity)

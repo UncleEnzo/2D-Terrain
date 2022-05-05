@@ -1,5 +1,6 @@
 using Nevelson.Utils;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.Tilemaps;
@@ -68,22 +69,25 @@ namespace Nevelson.Terrain
             }
         }
 
-        public bool ApplyTileInteraction(IInteractTiles iInteractTiles)
+        public void ApplyTileInteraction(IInteractTiles iInteractTiles)
         {
             if (!isInteractable)
             {
-                return false;
+                iInteractTiles.InteractWithTile(this, false);
+                return;
             }
 
-            //allows for pitfall tile interaction until character has begun falling
+            //allows interaction in pitfall tile until player actually triggers pitfall
             //Example utility: Treading water
             if (isCurrentlyFalling)
             {
-                return false;
+
+                iInteractTiles.InteractWithTile(this, false);
+                return;
             }
 
-            iInteractTiles.InteractWithTile(this);
-            return true;
+            iInteractTiles.InteractWithTile(this, true);
+            return;
         }
 
         public TileData ApplyTileProperties(Rigidbody2D rigidbody, Vector2 moveVelocity, TileData previousTileData, Vector2 tilePos, IPitfall iPitfall)

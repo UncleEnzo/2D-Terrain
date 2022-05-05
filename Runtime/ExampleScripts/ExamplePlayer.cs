@@ -7,6 +7,8 @@ namespace Nevelson.Terrain
     [RequireComponent(typeof(ExampleUnityInputControllerMove))]
     public class ExamplePlayer : MonoBehaviour, IPitfallCondition, IPitfallStates, IInteractTiles
     {
+        public string InteractTooltip { get => interactString; }
+
         [Header("Example condition where player may not fall into pit")]
         [SerializeField] private bool isHovering = false;
         [Header("Takes damage on pitfall")]
@@ -23,6 +25,7 @@ namespace Nevelson.Terrain
         private AudioSource audioSource;
         private ExampleUnityInputControllerMove movement;
         private bool isSpriteFlipped = false;
+        private string interactString = "";
 
         private void Start()
         {
@@ -90,10 +93,17 @@ namespace Nevelson.Terrain
             movement.enabled = true;
         }
 
-        public void InteractWithTile(TileData tileData)
+        public void InteractWithTile(TileData tileData, bool isTileInteractable)
         {
+            if (!isTileInteractable)
+            {
+                interactString = "";
+                return;
+            }
+
             if (tileData == pitfallInteract)
             {
+                interactString = "Press Space";
                 if (Input.GetKeyDown(KeyCode.Space))
                 {
                     Debug.Log("Treading Water!");
@@ -102,6 +112,7 @@ namespace Nevelson.Terrain
 
             if (tileData == interactableTile1)
             {
+                interactString = "Press Space";
                 if (Input.GetKeyDown(KeyCode.Space))
                 {
                     Debug.Log("InteractTileOne Interaction Triggered!");
@@ -110,6 +121,7 @@ namespace Nevelson.Terrain
 
             if (tileData == interactableTile2)
             {
+                interactString = "Press Space";
                 if (Input.GetKeyDown(KeyCode.Space))
                 {
                     Debug.Log("I pressed space on interaction tile 2!");
