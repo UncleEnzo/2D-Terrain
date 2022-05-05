@@ -3,7 +3,6 @@ using UnityEngine;
 namespace Nevelson.Terrain
 {
     [RequireComponent(typeof(Rigidbody2D))]
-    [RequireComponent(typeof(AudioSource))]
     [RequireComponent(typeof(ExampleUnityInputControllerMove))]
     public class ExamplePlayer : MonoBehaviour, IPitfallCondition, IPitfallStates, IInteractTiles
     {
@@ -13,23 +12,19 @@ namespace Nevelson.Terrain
         [SerializeField] private bool isHovering = false;
         [Header("Takes damage on pitfall")]
         [SerializeField] private int health = 10;
-        [Header("Takes damage on pitfall")]
-        [SerializeField] private AudioClip fallingSound;
-        [SerializeField] private AudioClip hitSound;
+
         [SerializeField] TileData pitfallInteract;
         [SerializeField] TileData interactableTile1;
         [SerializeField] TileData interactableTile2;
 
         private Animator anim;
         private SpriteRenderer spriteRenderer;
-        private AudioSource audioSource;
         private ExampleUnityInputControllerMove movement;
         private bool isSpriteFlipped = false;
         private string interactString = "";
 
         private void Start()
         {
-            audioSource = GetComponent<AudioSource>();
             spriteRenderer = GetComponentInChildren<SpriteRenderer>();
             anim = GetComponentInChildren<Animator>();
             movement = GetComponent<ExampleUnityInputControllerMove>();
@@ -84,12 +79,13 @@ namespace Nevelson.Terrain
         public void PF_During()
         {
             health--;
-            audioSource.PlayOneShot(fallingSound);
+            //Examples:
+            //Audio Effects from AudioSource or other player
+            //Water Splash effect
         }
 
         public void PF_After()
         {
-            audioSource.PlayOneShot(hitSound);
             movement.enabled = true;
         }
 

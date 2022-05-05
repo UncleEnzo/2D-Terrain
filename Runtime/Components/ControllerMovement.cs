@@ -9,12 +9,12 @@ namespace Nevelson.Terrain
 
         protected virtual void FixedUpdate()
         {
-            Vector2 moveInput = SetMoveInput();
+            Vector2 moveInput = SetTerrainMoveInput();
             SetMovementVelocity(moveInput);
             TraverseTile(MoveVelocity);
         }
 
-        protected abstract Vector2 SetMoveInput();
+        protected abstract Vector2 SetTerrainMoveInput();
 
         private void SetMovementVelocity(Vector2 moveInput)
         {

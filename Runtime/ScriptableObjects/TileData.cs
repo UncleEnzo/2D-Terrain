@@ -1,6 +1,5 @@
 using Nevelson.Utils;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.Tilemaps;
@@ -10,13 +9,14 @@ using static Nevelson.Utils.Enums;
 namespace Nevelson.Terrain
 {
     [CreateAssetMenu(fileName = "TileDataSO", menuName = "Terrain/Tile/TileDataSO")]
-    public class TileData : ScriptableObject
+    public class TileData : ScriptableObject, ITileData
     {
         public TileBase[] TileSet { get => tileset; }
         public bool IsMovingPlatform { get => isMovingPlatform; }
         public Vector2 MovePlatformVelocity { private get; set; } = Vector2.zero;
 
         [SerializeField] private TileBase[] tileset = new TileBase[0];
+        [SerializeField] private TileSound[] tileSounds = new TileSound[0];
         [SerializeField] private bool isPitfall = false;
         [SerializeField] private bool isMovingPlatform = false;
         [SerializeField] private bool isInteractable = false;
@@ -69,6 +69,20 @@ namespace Nevelson.Terrain
             }
         }
 
+        public TileData Get => this;
+
+        public void ApplyTileSounds(ITileSound iTileSound)
+        {
+            if (tileSounds == null || tileSounds.Length <= 0)
+            {
+                iTileSound.PlayTileSound(tileSounds, false);
+                return;
+            }
+
+            iTileSound.PlayTileSound(tileSounds, true);
+            return;
+        }
+
         public void ApplyTileInteraction(IInteractTiles iInteractTiles)
         {
             if (!isInteractable)
@@ -81,7 +95,6 @@ namespace Nevelson.Terrain
             //Example utility: Treading water
             if (isCurrentlyFalling)
             {
-
                 iInteractTiles.InteractWithTile(this, false);
                 return;
             }

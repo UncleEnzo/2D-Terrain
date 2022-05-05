@@ -13,10 +13,15 @@ MonoBehaviour:
   m_Name: DefaultTileMovement
   m_EditorClassIdentifier: 
   tileset: []
+  tileSounds: []
+  isPitfall: 0
+  isMovingPlatform: 0
+  isInteractable: 0
+  moveType: 0
   speedModifier: 1
   applySpeedModInDir: 00000000010000000200000003000000
-  currentMovementType: 0
   onChangeToPhysicsSpeedReduction: 0.35
   knockbackRegainTransformControlThreshold: 0.35
   conveyorBeltDir: 
   conveyorSpeed: 100
+  tileYOffset: 0.4
