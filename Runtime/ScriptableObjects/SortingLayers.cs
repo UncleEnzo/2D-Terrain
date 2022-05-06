@@ -15,8 +15,6 @@ namespace Nevelson.Terrain
         [SerializeField] private List<string> excludeTopLayers;
         [SerializeField] private List<string> respawnUnfriendly;
 
-        private SortingLayerDict excludeTopLayer;
-
         private void OnValidate()
         {
             var intersect = sortingLayers.Where(i => sortingLayers.Any(t => t.Key != i.Key && t.Value == i.Value))
